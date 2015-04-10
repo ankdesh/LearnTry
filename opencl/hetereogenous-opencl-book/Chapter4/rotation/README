@@ -1,0 +1,8 @@
+Compilation command assuming GCC and AMD APP SDK located in the default locations
+
+gcc bmpfuncs.c rotation.c -I /opt/AMDAPP/include/ -L/opt/AMDAPP/lib/x86_64/ -lOpenCL -lm
+
+Compilation comand if using the C++ Binding example
+
+g++ bmpfuncs.c rotation.cpp -I /opt/AMDAPP/include/ -L/opt/AMDAPP/lib/x86_64/ -lOpenCL -lm
+
