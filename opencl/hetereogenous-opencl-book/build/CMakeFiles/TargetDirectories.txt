@@ -1,0 +1,10 @@
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_16/Dijkstra/CMakeFiles/Dijkstra.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_6/HelloBinaryWorld/CMakeFiles/HelloBinaryWorld.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_2/HelloWorld/CMakeFiles/HelloWorld.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_3/OpenCLConvolution/CMakeFiles/OpenCLConvolutionChap3.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_3/OpenCLInfo/CMakeFiles/OpenCLInfo.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_7/SimpleBufferSubBuffer/CMakeFiles/SimpleBufferSubBuffer.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_14/histogram/CMakeFiles/histogram.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_12/Sinewave/CMakeFiles/sinewave.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_22/CMakeFiles/spmv.dir
+/home/ankdesh/LearnTry/opencl/hetereogenous-opencl-book/build/src/Chapter_12/VectorAdd/CMakeFiles/vecadd.dir

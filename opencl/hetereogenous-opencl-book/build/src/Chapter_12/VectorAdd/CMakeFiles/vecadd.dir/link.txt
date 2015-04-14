@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/vecadd.dir/vecadd.cpp.o  -o vecadd -rdynamic -lOpenCL 
