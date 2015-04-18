@@ -1,0 +1,236 @@
+GATLAS - GPU Automatically Tuned Linear Algebra Software
+
+Chris Jang
+fastkor@gmail.com
+
+August 20 2010
+
+
+******************************************************************************
+* Image based kernel SGEMM on ATI 5000 model GPUs
+
+Let's benchmark SGEMM using images on a single GPU system using EM search with
+the final benchmark as an average over ten trials. The calculation uses square
+matrices of size 3520 x 3520.
+
+    ./bench_matmul -d gpu -T floatimg -G -j my_device_journal_file -n 3520 -e -t 10
+
+With my HD 5870 with SDK v2.2 and driver 10.7b, this reaches 1368 gigaFLOPS.
+Note that PCIe bus data transfer is not included in the benchmarking. Only
+kernel execution time is counted. Note there are command line switches to
+include PCIe bus data transfer in timings.
+
+    [trial 0] 152119	1 3520 3520 3520 0 0 16 16 4 4 0	(0 0 0)
+    ...
+    [0] 637648 usec	avg: 1368.37	stddev: 3.49687	1 3520 3520 3520 0 0 8 8 8 4 1	(1 0 0)
+
+The best kernel found uses work groups with 8 x 8 = 64 threads and an inner
+blocking of 8 x 4 quads (float4) for AB. The extra parameter of 1 affects
+kernel properties such as inlining matrix dimensions and inner product
+accumulation loop ordering. In this case, the matrix dimensions of M/N/K =
+3520 are inlined.
+
+There is a corresponding command line tool to printing out this best kernel.
+
+    ./print_matmul -T floatimg -G -n 3520 -g 8 -y 8 -x 1
+
+Higher performance is possible if matrix A is transposed (column major). If we
+add a "-a" to the "bench" and "print" commands above, performance increases.
+
+    ./bench_matmul -d gpu -T floatimg -G -j my_device_journal_file -n 3520 -e -t 10 -a
+
+On my HD 5870, this reaches 1418 gigaFLOPS.
+
+    [0] 615487 usec	avg: 1417.63	stddev: 2.74254	1 3520 3520 3520 1 0 8 8 8 4 3	(1 1 0)
+
+How do we know this kernel actually works? The OpenCL compiler may generate a
+fast kernel that produces bad output data. By adding the "-p" switch to the
+"bench" command, the GPU kernel output is compared with a simple reference CPU
+implementation using random matrix data. Other command line options specify
+the one kernel variation of interest. From the numbers:
+
+    1 0 8 8 8 4 3
+
+we find the best kernel uses 8 x 8 work groups and 8 x 4 inner blocking with
+an extra parameter of 3. The leading "1 0" indicate the matrix A is transposed
+while B is not. Note that we use a dummy file for the journal. If we use the
+real journal file, the memoization of the EM optimization search will take the
+previously sampled timing without passing any work to the GPU. That's not what
+we want here.
+
+    ./bench_matmul -d gpu -T floatimg -G -j dummy_file -n 3520 -g 8 -y 8 -x 3 -a -p
+
+If the result has low error, we have some confidence it is ok. It is not that
+unusual to find that kernels which seem ok using a test pattern (such as A and
+B all ones) will fail when the input is randomized data. It is also not
+unusual to find that OpenCL kernels work on one device and fail on another.
+Results may also change depending on the SDK and driver. This makes validation
+of kernel output important.
+
+The benchmark output with "-p" is: (note this takes a long time as the CPU
+reference calculation is not optimized so is expensive for large matrices)
+
+    [dummy run] rebuilding kernel... done	absdiff: 0	
+    [trial 0] rebuilding kernel... done	absdiff: 0	89481	1 3520 3520 3520 1 0 8 8 8 4 3	(1 1 0)
+    [0] 89481 usec	avg: 975.103	stddev: 0	1 3520 3520 3520 1 0 8 8 8 4 3	(1 1 0)
+
+The absolute difference is zero. So this kernel is probably good.
+
+Notice the kernel timing is affected. It took 89481 microseconds instead of
+nearer to 61500 microseconds as it did earlier when reaching 1418 gigaFLOPS.
+My belief is that the allocation of 50 MB on the heap for the unoptimized
+CPU reference calculation affects the main timing loop even though all
+references to this memory are outside it. The benchmarks are done with wall
+clock time so any memory paging and I/O will affect measured times.
+
+
+******************************************************************************
+* Memory buffer based DP matrix multiplication on ATI 5000 model GPUs
+
+Let's try using vector length of two (double2) for M/N/K = 1024.
+
+    ./bench_matmul -d gpu -T double2 -j my_device_journal_file -n 1024 -e -t 10
+
+On my HD 5870 using SDK v2.2 and Catalyst 10.7b, this gives 75 gigaFLOPS.
+
+    [0] 289446 usec	avg: 75.469	stddev: 10.5162	0 1024 1024 1024 0 0 8 8 2 2 7	(1 3)
+
+This best kernel should be checked to see if the output is good.
+
+    ./bench_matmul -d gpu -T double2 -j dummy_file -n 1024 -g 8 -y 2 -x 7 -p
+
+It looks ok.
+
+    [trial 0] rebuilding kernel... done	absdiff: 1.41731e-08	40553	0 1024 1024 1024 0 0 8 8 2 2 7	(1 3)
+    [0] 40553 usec	avg: 52.9291	stddev: 0	0 1024 1024 1024 0 0 8 8 2 2 7	(1 3)
+
+Let's do that a few more times to make sure.
+
+    ./bench_matmul -d gpu -T double2 -j dummy_file -n 1024 -g 8 -y 2 -x 7 -p -t 3
+
+It still looks ok.
+
+    [trial 0] rebuilding kernel... done	absdiff: 1.41731e-08	40987	0 1024 1024 1024 0 0 8 8 2 2 7	(1 3)
+    [trial 1] rebuilding kernel... done	absdiff: 1.42429e-08	39717	0 1024 1024 1024 0 0 8 8 2 2 7	(1 3)
+    [trial 2] rebuilding kernel... done	absdiff: 1.43066e-08	38979	0 1024 1024 1024 0 0 8 8 2 2 7	(1 3)
+
+Now let's print out this kernel.
+
+    ./print_matmul -T double2 -n 1024 -g 8 -y 2 -x 7
+
+
+******************************************************************************
+* Memory buffer based DGEMM on NVIDIA Fermi model GPUs
+
+Note that NVIDIA support is currently very immature. It has been recently
+added to GATLAS. I consider it alpha quality at best and completely broken
+at worst. Another issue is that all development is currently with a GTX 480.
+Experience is therefore limited with NVIDIA GPUs.
+
+Let's try using a scalar kernel at M/N/K = 640.
+
+    ./bench_matmul -d gpu -T double1 -G -j my_device_journal_file -n 640 -e -t 10
+
+This reaches 126 gigaFLOPS on my GTX 480.
+
+    [0] 41594 usec	avg: 126.246	stddev: 0.211438	1 640 640 640 0 0 8 8 10 1 2	(0 1)
+
+As above, the best kernel can be printed using the kernel parameters. In this
+case, the best kernel uses 8 x 8 work groups and 10 x 1 inner blocking with
+doubles. The extra parameter is 2.
+
+    ./print_matmul -T double1 -G -n 640 -g 8 -y 10 -x 2
+
+To check this best kernel for correctness, the "-p" switch is used.
+
+    ./bench_matmul -d gpu -T double1 -G -j dummy_file -n 640 -g 8 -y 10 -x 2 -p
+
+The output on my GTX 480 using SDK v3.1 and driver 256.40 is:
+
+    [dummy run] rebuilding kernel... done	absdiff: 1.31965e-09	
+    [trial 0] rebuilding kernel... done	absdiff: 31456.5	fail	1 640 640 640 0 0 8 8 10 1 2	(0 1)
+
+The output is bad! This kernel generates corrupt output.
+
+Let's try another kind of kernel using a vector length of four (double4).
+
+    ./bench_matmul -d gpu0 -T double4 -G -j my_device_journal_file -n 640 -e -t 10
+
+This reaches 75 gigaFLOPS on my GTX 480.
+
+    [0] 69883 usec	avg: 75.1409	stddev: 0.0506575	1 640 640 640 0 0 8 8 5 4 5	(1 2)
+
+Is the kernel output correct? To be sure, let's check with random matrix data
+ten times.
+
+    ./bench_matmul -d gpu0 -T double4 -G -j dummy_file -n 640 -g 8 -y 5 -x 5 -p -t 10
+
+The output is:
+
+    [dummy run] rebuilding kernel... done	absdiff: 1.45354e-12	
+    [trial 0] rebuilding kernel... done	absdiff: 5.23096e-09	6995	1 640 640 640 0 0 8 8 5 4 5	(1 2)
+    [trial 1] rebuilding kernel... done	absdiff: 2.86786e-09	7054	1 640 640 640 0 0 8 8 5 4 5	(1 2)
+    [trial 2] rebuilding kernel... done	absdiff: 3.20107e-09	6990	1 640 640 640 0 0 8 8 5 4 5	(1 2)
+    [trial 3] rebuilding kernel... done	absdiff: 4.31234e-10	6992	1 640 640 640 0 0 8 8 5 4 5	(1 2)
+    [trial 4] rebuilding kernel... done	absdiff: 7.26436	fail	1 640 640 640 0 0 8 8 5 4 5	(1 2)
+
+It stopped at the first failure. This tells us that we can not always trust a
+single check with random matrix data. Results may be non deterministic (for
+some reason, perhaps a race condition of some kind).
+
+So let's try the EM search with "-p" to try rejecting bad variations during
+the auto-tuning. This will take longer than usual due to the cost of the CPU
+reference calculation for each timing trial. Normally, only a test pattern is
+used to check the kernel output.
+
+    ./bench_matmul -d gpu0 -T double4 -G -j dummy_file -n 640 -e -t 10 -p
+
+This seems to be working but at the end fails just as before.
+
+    [trial 0] 6988	1 640 640 640 0 0 8 8 5 4 11	(1 5)
+    [trial 1] rebuilding kernel... done	absdiff: 3.44117e-09	6992	1 640 640 640 0 0 8 8 5 4 11	(1 5)
+    [trial 2] rebuilding kernel... done	absdiff: 2.51564e-09	7000	1 640 640 640 0 0 8 8 5 4 11	(1 5)
+    [trial 3] rebuilding kernel... done	absdiff: 3.21879e-09	6991	1 640 640 640 0 0 8 8 5 4 11	(1 5)
+    [trial 4] rebuilding kernel... done	absdiff: 11.8456	fail	1 640 640 640 0 0 8 8 5 4 11	(1 5)
+
+...my experience is that results are not deterministic. Kernels sometimes work
+with random matrix data and sometimes fail completely. These same kernels work
+perfectly on ATI GPUs. I do not know the root cause of this. It may not be the
+kernels themselves but the benchmarking framework around them. For instance,
+if buffer data is not transferred properly, that will cause failures.
+
+Obviously, more work is required for NVIDIA support.
+
+
+******************************************************************************
+* Multiple GPUs
+
+I normally use a HD 5870 and GTX 480 at the same time. GATLAS adds devices to
+a list in the order returned by the OpenCL runtime.
+
+By running the oclInfo utility: (does not matter if built for ATI or NVIDIA)
+
+    ./oclInfo
+
+the device order is shown:
+
+    device[0] = 0x21657c0	context 0x215a5c0	queue 0x2497e20
+    ...
+    name	GeForce GTX 480
+    ...
+    device[1] = 0x21fc0f0	context 0x237db80	queue 0x24982b0
+    ...
+    name	Intel(R) Core(TM) i7 CPU         920  @ 2.67GHz
+    ...
+    device[2] = 0x236a7d0	context 0x2497d90	queue 0x24db030
+    ...
+    name	Cypress
+
+So in this case, gpu0 is the GTX 480 and gpu1 is the HD 5870.
+
+One caution is that as the ATI and NVIDIA builds generate executable binaries
+with the same names, it is easy to become confused, especially since both
+OpenCL runtimes are aware of all GPUs on the system whether they are able to
+fully support them or not. I have accidentally used ATI binaries to run
+kernels on the NVIDIA GPU and vice-versa. I'm not sure what this really does.
+

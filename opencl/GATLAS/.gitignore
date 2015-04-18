@@ -1,0 +1,11 @@
+*.o
+bench_matmul
+bench_matvec
+bench_saxpy
+libgatlas.a
+oclInfo
+print_matmul
+print_matvec
+print_saxpy
+probeAutoVectorize
+purgeJournal

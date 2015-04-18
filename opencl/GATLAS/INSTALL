@@ -1,0 +1,65 @@
+GATLAS - GPU Automatically Tuned Linear Algebra Software
+
+Chris Jang
+fastkor@gmail.com
+
+August 18 2010
+
+
+****************************************
+* Building for ATI
+
+The environment variable ATISTREAMSDKROOT must be set to the top-level
+directory of the ATI Stream SDK installation. The environment variable
+LD_LIBRARY_PATH should include the appropriate shared object library
+path in the SDK installation tree.
+
+For example:
+
+    export ATISTREAMSDKROOT=/opt/ati-stream-sdk-v2.2-lnx64
+    export LD_LIBRARY_PATH=$ATISTREAMSDKROOT/lib/x86_64:$LD_LIBRARY_PATH
+
+Then do:
+
+    make -f Makefile.ATI
+
+To clean up:
+
+    make -f Makefile.ATI clean
+
+
+****************************************
+* Building for NVIDIA
+
+The environment variable NVIDIACUDASDKROOT must be set to the top-level
+directory of the NVIDIA CUDA installation. The PATH and LD_LIBRARY_PATH
+should also include the appropriate paths in the CUDA installation tree.
+
+For example:
+
+    export NVIDIACUDASDKROOT=/usr/local/cuda
+    export PATH=$NVIDIACUDASDKROOT/bin:$PATH
+    export LD_LIBRARY_PATH=$NVIDIACUDASDKROOT/lib64:$NVIDIACUDASDKROOT/lib:$LD_LIBRARY_PATH
+
+Then do:
+
+    make -f Makefile.NVIDIA
+
+To clean up:
+
+    make -f Makefile.NVIDIA clean
+
+
+****************************************
+* Executable binaries and scripts
+
+bench_matmul, print_matmul - matrix multiply (GEMM and C = A * B)
+bench_matvec, print_matvec - matrix vector multiplication
+bench_saxpy, print_saxpy   - scalar alpha x plus y (SAXPY)
+
+oclInfo             - see all devices and info
+probeAutoVectorize  - test support of vector attribute hint
+purgeJournal        - trim benchmark journal file
+retry               - benchmark retry loop (for compiler seg faults)
+wavedims            - optimal square matrix dimensions for ATI
+

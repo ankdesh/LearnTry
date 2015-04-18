@@ -1,0 +1,134 @@
+
+#ATI_SDK = /opt/ati-stream-sdk-v2.0-lnx64
+ATI_SDK = /home/ankdesh/installed/AMDSDK/AMDAPPSDK-3.0-0-Beta
+
+#NVIDIA_SDK = /usr/local/cuda
+NVIDIA_SDK = $(NVIDIACUDASDKROOT)
+
+GNU_CC = gcc
+GNU_CFLAGS = -std=c99 -O0 -g
+
+GNU_CXX = g++
+GNU_CXXFLAGS = -O0 -g
+
+AR=ar
+RANLIB=ranlib
+
+
+ATI_CFLAGS = -I$(ATI_SDK)/include
+ATI_OPENCL_LDFLAGS = -L$(ATI_SDK)/lib/x86_64 -L/usr/lib/x86_64-linux-gnu -lOpenCL
+ATI_CAL_LDFLAGS = -L$(ATI_SDK)/lib/x86_64 -laticalrt -laticalcl
+
+NVIDIA_CFLAGS = -I$(NVIDIA_SDK)/include
+NVIDIA_LDFLAGS = -L$(NVIDIA_SDK)/lib64 -lOpenCL
+
+GATLAS_LDFLAGS = -L. -lgatlas
+
+
+.cpp.o :
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+
+
+OCL_OBJECT_CODE = \
+	OCLUtil.o \
+	OCLBase.o \
+	OCLApp.o \
+	OCLAppUtil.o
+
+GATLAS_OBJECT_CODE = \
+	GatlasAppUtil.o \
+	GatlasBenchmark.o \
+	GatlasCodeText.o \
+	GatlasFormatting.o \
+	GatlasOperator.o \
+	GatlasQualifier.o \
+	GatlasType.o
+
+KERNEL_OBJECT_CODE = \
+	KernelBaseMatmul.o \
+	KernelBaseMatvec.o \
+	KernelBaseSaxpy.o
+
+LIB_OBJECT_CODE = \
+	$(OCL_OBJECT_CODE) \
+	$(GATLAS_OBJECT_CODE) \
+	$(KERNEL_OBJECT_CODE)
+
+EXECUTABLES = \
+	oclInfo \
+	probeAutoVectorize \
+	purgeJournal \
+	bench_matmul print_matmul \
+	bench_matvec print_matvec \
+	bench_saxpy print_saxpy
+
+
+# default target
+all : binaries
+
+# default target for all binaries
+binaries : libgatlas.a $(EXECUTABLES)
+
+# archive library
+libgatlas.a : $(LIB_OBJECT_CODE)
+	$(AR) qc $@ $(LIB_OBJECT_CODE)
+	$(RANLIB) $@
+
+# OpenCL information utility
+oclInfo : oclInfo.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS)
+
+# check if OpenCL platform supports auto vectorize kernel attribute
+probeAutoVectorize : probeAutoVectorize.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS)
+
+# purge journal file
+purgeJournal : purgeJournal.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS)
+
+#
+# matrix multiply
+#
+
+bench_matmul.o : benchMatmul.cpp
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+bench_matmul : bench_matmul.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS) -lm
+
+print_matmul.o : printMatmul.cpp
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+print_matmul : print_matmul.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS) -lm
+
+#
+# matrix vector multiply
+#
+
+bench_matvec.o : benchMatvec.cpp
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+bench_matvec : bench_matvec.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS) -lm
+
+print_matvec.o : printMatvec.cpp
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+print_matvec : print_matvec.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS) -lm
+
+#
+# saxpy
+#
+
+bench_saxpy.o : benchSaxpy.cpp
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+bench_saxpy : bench_saxpy.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS) -lm
+
+print_saxpy.o : printSaxpy.cpp
+	$(GNU_CXX) -c $(GNU_CXXFLAGS) $(USE_CFLAGS) $< -o $@
+print_saxpy : print_saxpy.o libgatlas.a
+	$(GNU_CXX) -o $@ $< $(GATLAS_LDFLAGS) $(USE_LDFLAGS) -lm
+
+
+clean :
+	rm -f *.o KernelFile.hpp libgatlas.a $(EXECUTABLES)
+
