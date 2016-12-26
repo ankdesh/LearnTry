@@ -2,3 +2,4 @@ sqlite/examples-tutorialspoint-com/build
 model.tfl*
 *.gz
 .ipynb_checkpoints/
+*.zip
