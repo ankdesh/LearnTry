@@ -1,0 +1,5 @@
+module:
+    ABC_TOP:
+        inputs:
+            - [bit<0-0>, n_clock, Global Clock]
+#            - bit<10:0> name:addr   com:<Address>
