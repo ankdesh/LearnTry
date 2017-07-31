@@ -6,3 +6,7 @@ module:
         outputs:
             - [bit<0-0>, n_clock, Global Clock]
             - [bit<0-10>, v_clock, Vlobal Clock]
+
+Mapping:
+    - ABC.xyz > PQR.pqr
+    - ABC.zyx > PQR.rqp
