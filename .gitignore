@@ -3,3 +3,5 @@ model.tfl*
 *.gz
 .ipynb_checkpoints/
 *.zip
+a.out
+*.swp
