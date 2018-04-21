@@ -60,6 +60,26 @@ void tensorDeepCopy (const Tensor<T>& input,
 
 
 template <typename T>
+  void foreach_pixelInTensors(const Tensor<T>& inTensor,
+                                    Tensor<T>& outTensor, 
+                                    std::function<void(T&,T&)> expr){
+  
+  for (int n = 0; n < inTensor.dims.n; n++){
+    for (int c = 0; c < inTensor.dims.c; c++){
+      for (int h = 0; h < inTensor.dims.h; h++){
+        for (int w = 0; w < inTensor.dims.w; w++){
+          uint32_t loc =  n * inTensor.dims.c * inTensor.dims.h * inTensor.dims.w
+                        + c * inTensor.dims.h * inTensor.dims.w 
+                        + h * inTensor.dims.w 
+                        + w;
+          expr(inTensor.data[loc], outTensor.data[loc]);
+        }
+      }
+    }
+  }
+}
+
+template <typename T>
   void foreach_pixelInChannel(Tensor<T>& tensor, uint32_t channel, std::function<void(T&)> expr){
   
   uint64_t startIdx = tensor.offset + channel * tensor.dims.h * tensor.dims.w;
