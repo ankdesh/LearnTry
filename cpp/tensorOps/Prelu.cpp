@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <cassert>
+#include <memory>
 
 template <typename T>
 struct ApplyPrelu{
@@ -34,8 +35,10 @@ Status activation_prelu(const Tensor<DataType>& input,
   assert (slope.dims.h == 1);  
   assert (slope.dims.w == 1);  
 
-  // Copy input to output
-  tensor_utils::tensorDeepCopy<DataType>(input, output);
+  // Copy input to output if not in place computation
+  if (std::addressof(input) != std::addressof(output)){
+    tensor_utils::tensorDeepCopy<DataType>(input, output);
+  }
 
   for (uint32_t c = 0; c < slope.dims.c; c++){
     DataType slopeVal = tensor_utils::readTensorVal<DataType>(slope, 0, c, 0, 0);
