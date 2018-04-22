@@ -6,53 +6,43 @@
 #include <memory>
 
 template <typename T>
-struct ApplyPrelu{
+struct ApplyPower{
 
-  ApplyPrelu(T slope){
-    slope_ = slope;
+  ApplyPower(T power, T scale, T shift):
+    power_(power),
+    scale_(scale),
+    shift_(shift){
   }
 
-  T slope_;
+  T power_;
+  T scale_;
+  T shift_;
 
-  void operator () (T& val){
-    // std::cout << std::to_string(val) << " " << slope_ << std::endl;
-    val = std::max<T>(0,val) + slope_ * std::min<T>(0, val);
-    //std::cout << std::to_string(val) << " " << slope_ << std::endl;
+  void operator () (T& inVal, T& outVal){
+    outVal = T(std::pow( double(scale_ * inVal + shift_), power_));
   }
 };
 
 
 template <typename DataType> 
-Status activation_prelu(const Tensor<DataType>& input,  
-                              Tensor<DataType>& output,
-                        const Tensor<DataType>& slope,
-                        const bool& channel_shared){
-
-  // TODO Check about channel_shared once clarified in the func prototype doc
-  
-  assert (slope.dims.n == input.dims.n);  
-  assert (slope.dims.c == input.dims.c);
-  assert (slope.dims.h == 1);  
-  assert (slope.dims.w == 1);  
+Status power(const Tensor<DataType>& input,  
+                   Tensor<DataType>& output,
+                   const DataType& power,
+                   const DataType& scale,
+                   const DataType& shift){
 
   // Copy input to output if not in place computation
   if (std::addressof(input) != std::addressof(output)){
     tensor_utils::tensorDeepCopy<DataType>(input, output);
   }
 
-  for (uint32_t c = 0; c < slope.dims.c; c++){
-    DataType slopeVal = tensor_utils::readTensorVal<DataType>(slope, 0, c, 0, 0);
-    ApplyPrelu<DataType> applyPrelu(slopeVal);
-    
-    tensor_utils::foreach_pixelInChannel<DataType>(output, c, applyPrelu);
-  }
+  ApplyPower<DataType> applypower(power, scale, shift);
+  tensor_utils::foreach_pixelInTensors<DataType>(input, output, applypower);
 
 }
 
 
 int main(){
-
-  ApplyPrelu<int8_t> applyPrelu(100);
 
   Tensor<int8_t> tensor;
   tensor.precision_type = PrecisionType::INT8;
@@ -80,16 +70,11 @@ int main(){
     tensor_utils::writeTensorVal<int8_t>(slope, 0, c, 0, 0, c * 100 );
   }
 
-  //tensor_utils::foreach_pixelInChannel<int8_t>(tensor, 2, applyPrelu);  
-  //std::cout << std::to_string(tensor_utils::readTensorVal(tensor, 0, 2, 0, 0))  << std::endl;
-  //
-  //tensor_utils::foreach_pixelInChannel<int8_t>(tensor, 1, applyPrelu);  
-  //std::cout << std::to_string(tensor_utils::readTensorVal(tensor, 0, 1, 0, 0))  << std::endl;
 
   std::cout << std::to_string(tensor_utils::readTensorVal(tensor, 0, 1, 0, 0))  << std::endl;
   std::cout << std::to_string(tensor_utils::readTensorVal(tensor, 0, 2, 0, 0))  << std::endl;
 
-  activation_prelu(tensor, tensor, slope, false);
+  power<int8_t>(tensor, tensor, 2, 2, 2);
   
   std::cout << std::to_string(tensor_utils::readTensorVal(tensor, 0, 1, 0, 0))  << std::endl;
   std::cout << std::to_string(tensor_utils::readTensorVal(tensor, 0, 2, 0, 0))  << std::endl;
