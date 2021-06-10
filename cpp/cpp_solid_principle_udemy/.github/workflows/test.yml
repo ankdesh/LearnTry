@@ -1,0 +1,20 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and test
+      run: |
+        chmod +x project/install_dependencies.sh
+        project/install_dependencies.sh
+        mkdir build && cd build
+        cmake ../project/app/
+        make -j4
+        valgrind make test
+        seq 3 | xargs -I -- python3 ../project/tests/sct/tests.py

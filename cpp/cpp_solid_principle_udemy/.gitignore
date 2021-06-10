@@ -1,0 +1,7 @@
+build
+videos
+*.mp*
+*.mkv
+*.m4a
+*.tar.xz
+SOLID-C++.png
