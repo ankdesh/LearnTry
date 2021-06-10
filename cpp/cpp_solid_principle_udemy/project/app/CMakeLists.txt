@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(server)
 
+set (GTEST_ROOT ${CMAKE_SOURCE_DIR}/external/googletest/build)
+message( STATUS ${CMAKE_SOURCE_DIR})
 set(CMAKE_CXX_FLAGS "-std=c++17 -O3 -pedantic -Wall -Werror")
 
 enable_testing()
