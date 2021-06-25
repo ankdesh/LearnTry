@@ -1,19 +1,22 @@
 #ifndef ADDOP_HPP
 #define ADDOP_HPP
 
-#include "Node.hpp" 
+#include "Ops.hpp" 
 
-class AddOp: Node
-{
+class AddOp: Ops{
+    friend class OpsGen;
 public:
     
 private:
-    AddOp() = default;
-    AddOp(AddOp &&) = default;
-    AddOp(const AddOp &) = default;
-    AddOp &operator=(AddOp &&) = default;
-    AddOp &operator=(const AddOp &) = default;
+    AddOp() = delete;
+    AddOp(AddOp &&) = delete;
+    AddOp(const AddOp &) = delete;
+    AddOp &operator=(AddOp &&) = delete;
+    AddOp &operator=(const AddOp &) = delete;
     ~AddOp() = default;
+
+    AddOp(std::string name):
+        Ops(enums::NODE_TYPE::AddOp, name){}
 };
 
 #endif // ADDOP_HPP

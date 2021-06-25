@@ -28,19 +28,23 @@ public:
         return children_.cend(); 
     }
 
-    virtual void add_child(Node& child) final {
+    //TODO: Remove ? Should enforce type check of children
+    virtual void add_child(Node& child) { 
          children_.push_back(child);
     }
 
 
-
-private:
-    Node() = default;
-    Node(Node &&) = default;
-    Node(const Node &) = default;
-    Node &operator=(Node &&) = default;
-    Node &operator=(const Node &) = default;
+protected:
+    Node() = delete;
+    Node(Node &&) = delete;
+    Node(const Node &) = delete;
+    Node &operator=(Node &&) = delete;
+    Node &operator=(const Node &) = delete;
     ~Node() = default;
+
+    Node(enums::NODE_TYPE type, std::string name):
+        type_(type),
+        name_(name){} 
 
 protected:
     std::string name_;
