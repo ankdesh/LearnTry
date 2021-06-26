@@ -23,6 +23,7 @@ const std::string to_str(NODE_TYPE op){
         return "IndexOp";
         break;
     default:
+        return "";
         break;
     }
 }

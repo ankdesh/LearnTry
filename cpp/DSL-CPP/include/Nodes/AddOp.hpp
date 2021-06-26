@@ -6,6 +6,7 @@
 class AddOp: Ops{
     friend class OpsGen;
 public:
+        ~AddOp() = default;
     
 private:
     AddOp() = delete;
@@ -13,7 +14,6 @@ private:
     AddOp(const AddOp &) = delete;
     AddOp &operator=(AddOp &&) = delete;
     AddOp &operator=(const AddOp &) = delete;
-    ~AddOp() = default;
 
     AddOp(std::string name):
         Ops(enums::NODE_TYPE::AddOp, name){}

@@ -3,10 +3,12 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "Enums.hpp"
 
 class Node
 {
+    using NodePtr = std::shared_ptr<Node>; 
 public:
     virtual std::string name() final{
         return name_;
@@ -20,17 +22,17 @@ public:
         return type_;
     }
         
-    virtual std::vector<Node>::const_iterator children_begin() final{
+    virtual std::vector<NodePtr>::const_iterator children_begin() final{
         return children_.cbegin(); 
     }
 
-    virtual std::vector<Node>::const_iterator children_end() final {
+    virtual std::vector<NodePtr>::const_iterator children_end() final {
         return children_.cend(); 
     }
 
     //TODO: Remove ? Should enforce type check of children
-    virtual void add_child(Node& child) { 
-         children_.push_back(child);
+    virtual void add_child(NodePtr childPtr) { 
+         children_.push_back(childPtr);
     }
 
 
@@ -47,9 +49,9 @@ protected:
         name_(name){} 
 
 protected:
-    std::string name_;
     enums::NODE_TYPE type_;
-    std::vector<Node> children_;
+    std::string name_;
+    std::vector<std::shared_ptr<Node>> children_;
 };
 
 #endif // NODE_HPP
