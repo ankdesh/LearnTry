@@ -5,28 +5,14 @@
 
 namespace enums{
 
-enum class NODE_TYPE{
+enum class NODE_TYPE
+{
     AddOp,
     MultOp,
     IndexOp
 };
 
-const std::string to_str(NODE_TYPE op){
-    switch (op)        {
-    case NODE_TYPE::AddOp:
-        return "AddOp"; 
-        break;
-    case NODE_TYPE::MultOp:
-        return "MultOp";
-        break;
-    case NODE_TYPE::IndexOp:
-        return "IndexOp";
-        break;
-    default:
-        return "";
-        break;
-    }
-}
+const std::string to_str(NODE_TYPE op);
 
 }; // namespace enums
 

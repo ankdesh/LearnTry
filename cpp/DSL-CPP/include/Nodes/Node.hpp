@@ -10,7 +10,7 @@ class Node
 {
     using NodePtr = std::shared_ptr<Node>; 
 public:
-    virtual std::string name() final{
+    virtual std::string name() {
         return name_;
     }
     

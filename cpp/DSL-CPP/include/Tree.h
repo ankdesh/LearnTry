@@ -2,7 +2,7 @@
 #define TREE_H
 
 #include <memory>
-#include "Node.hpp"
+#include "Nodes/Node.hpp"
 
 template <typename T> class Tree 
 {

@@ -3,7 +3,7 @@
 
 #include "Ops.hpp" 
 
-class AddOp: Ops{
+class AddOp: public Ops{
     friend class OpsGen;
 public:
         ~AddOp() = default;

@@ -6,8 +6,11 @@
 
 class Ops: public Node{
     friend class OpsGen;
+    
 public:
     ~Ops() = default;
+
+    static bool isOpType(enums::NODE_TYPE nodeTy);
 
 protected:
     Ops() = delete;

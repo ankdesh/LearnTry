@@ -9,7 +9,6 @@
 class OpsGen{
 public: 
 
-    static std::shared_ptr<Ops> createOp(enums::NODE_TYPE opType, std::string name);
     static std::shared_ptr<AddOp> createAddOp(std::string name);
     static std::shared_ptr<MultOp> createMultOp(std::string name);
 
