@@ -1,5 +1,6 @@
 #include "Nodes/OpsGen.hpp"
-#include "TestOps.hpp"
+#include "Nodes/VarGen.hpp"
+#include "TestNodes.hpp"
 
 bool testOps(){
     auto addOp1 = OpsGen::createAddOp("AddOp1");
@@ -10,3 +11,11 @@ bool testOps(){
 
     return (result1 && result2);
 }
+
+bool testVar(){
+    auto addOp1 = VarGen::createVar("Var");
+    bool result1 = (addOp1->name() == "Var");
+
+    return result1;
+}
+

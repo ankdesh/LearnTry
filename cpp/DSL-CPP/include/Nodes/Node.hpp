@@ -10,28 +10,28 @@ class Node
 {
     using NodePtr = std::shared_ptr<Node>; 
 public:
-    virtual std::string name() {
+    std::string name() {
         return name_;
     }
     
-    virtual std::string type_str() final{
+    std::string type_str() {
         return enums::to_str(type_);
     };
 
-    virtual enums::NODE_TYPE type () final {
+    enums::NODE_TYPE type ()  {
         return type_;
     }
         
-    virtual std::vector<NodePtr>::const_iterator children_begin() final{
+    std::vector<NodePtr>::const_iterator children_begin() {
         return children_.cbegin(); 
     }
 
-    virtual std::vector<NodePtr>::const_iterator children_end() final {
+    std::vector<NodePtr>::const_iterator children_end()  {
         return children_.cend(); 
     }
 
     //TODO: Remove ? Should enforce type check of children
-    virtual void add_child(NodePtr childPtr) { 
+    void add_child(NodePtr childPtr) { 
          children_.push_back(childPtr);
     }
 
