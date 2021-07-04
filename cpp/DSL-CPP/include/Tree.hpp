@@ -6,22 +6,23 @@
 
 template <typename T> class Tree 
 {
-    using std::shared_ptr<T> NodePtr; 
+    typedef std::shared_ptr<T> NodePtr; 
 
 public:
+    ~Tree() = default;
+    Tree (NodePtr& rootNode): root_(rootNode) { }
+
     NodePtr getRootPtr(){
         return root_;
     } 
 
-    Tree (NodePtr& rootNode): root_(rootNode) {  }
-
 protected:
-    Tree() = default;
-    Tree(Tree &&) = default;
-    Tree(const Tree &) = default;
-    Tree &operator=(Tree &&) = default;
-    Tree &operator=(const Tree &) = default;
-    ~Tree() = default;
+    Tree() = delete;
+    Tree(Tree &&) = delete;
+    Tree(const Tree &) = delete;
+    Tree &operator=(Tree &&) = delete;
+    Tree &operator=(const Tree &) = delete;
+
 
 protected:
     NodePtr root_; 

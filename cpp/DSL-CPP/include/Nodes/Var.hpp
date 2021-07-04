@@ -5,7 +5,7 @@
 #include "Node.hpp" 
 
 class Var: public Node{
-    friend class VarGen;
+    friend class NodeGen;
     
 public:
     ~Var() = default;

@@ -3,5 +3,6 @@
 
 bool testOps();
 bool testVar();
+bool testIndexVar();
 
 #endif // TESTNODES_HPP

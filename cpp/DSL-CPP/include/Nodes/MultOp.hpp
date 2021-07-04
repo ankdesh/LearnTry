@@ -3,8 +3,8 @@
 
 #include "Ops.hpp" 
 
-class MultOp: Ops{
-    friend class OpsGen;
+class MultOp: public Ops{
+    friend class NodeGen;
 public:
     ~MultOp() = default;
     

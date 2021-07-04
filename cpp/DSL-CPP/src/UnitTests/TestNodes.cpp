@@ -1,20 +1,29 @@
-#include "Nodes/OpsGen.hpp"
-#include "Nodes/VarGen.hpp"
+#include "Nodes/NodeGen.hpp"
 #include "TestNodes.hpp"
 
 bool testOps(){
-    auto addOp1 = OpsGen::createAddOp("AddOp1");
+    auto addOp1 = NodeGen::createAddOp("AddOp1");
     bool result1 = (addOp1->name() == "AddOp1");
 
-    auto multOp1 = OpsGen::createMultOp("MultOp1");
-    bool result2 = true; //(addOp2->name() == "AddOp2");
+    auto multOp1 = NodeGen::createMultOp("MultOp1");
+    bool result2 = (multOp1->name() == "MultOp1");
 
-    return (result1 && result2);
+    auto indexOp1 = NodeGen::createIndexOp("IndexOp1");
+    bool result3 = (indexOp1->name() == "IndexOp1");
+
+    return (result1 && result2 && result3);
 }
 
 bool testVar(){
-    auto addOp1 = VarGen::createVar("Var");
+    auto addOp1 = NodeGen::createVar("Var");
     bool result1 = (addOp1->name() == "Var");
+
+    return result1;
+}
+
+bool testIndexVar() {
+    auto addOp1 = NodeGen::createIndexVar("IndexVar");
+    bool result1 = (addOp1->name() == "IndexVar");
 
     return result1;
 }

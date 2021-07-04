@@ -10,7 +10,8 @@ enum class NODE_TYPE
     AddOp,
     MultOp,
     IndexOp,
-    Var
+    Var,
+    IndexVar
 };
 
 const std::string to_str(NODE_TYPE op);

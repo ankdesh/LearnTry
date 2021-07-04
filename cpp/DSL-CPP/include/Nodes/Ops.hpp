@@ -5,7 +5,7 @@
 #include "Node.hpp" 
 
 class Ops: public Node{
-    friend class OpsGen;
+    friend class NodeGen;
     
 public:
     ~Ops() = default;

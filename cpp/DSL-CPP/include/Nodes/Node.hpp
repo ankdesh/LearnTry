@@ -30,7 +30,6 @@ public:
         return children_.cend(); 
     }
 
-    //TODO: Remove ? Should enforce type check of children
     void add_child(NodePtr childPtr) { 
          children_.push_back(childPtr);
     }

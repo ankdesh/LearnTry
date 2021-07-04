@@ -16,6 +16,9 @@ const std::string to_str(NODE_TYPE op) {
     case NODE_TYPE::Var:
         return "Var";
         break;
+    case NODE_TYPE::IndexVar:
+        return "IndexVar";
+        break;
     default:
         return "";
         break;

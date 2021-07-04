@@ -8,6 +8,7 @@ int main(int argc, char const *argv[])
 
     std::cout << "OpsTest1: " << testOps() << std::endl;
     std::cout << "VarTest: " << testVar() << std::endl;
+    std::cout << "IndexVarTest: " << testIndexVar() << std::endl;
 
     return 0;
 }

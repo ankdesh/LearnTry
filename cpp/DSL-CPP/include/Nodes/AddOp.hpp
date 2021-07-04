@@ -4,7 +4,7 @@
 #include "Ops.hpp" 
 
 class AddOp: public Ops{
-    friend class OpsGen;
+    friend class NodeGen;
 public:
         ~AddOp() = default;
     
