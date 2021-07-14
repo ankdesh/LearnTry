@@ -12,6 +12,8 @@
 class NodeGen{
 public: 
 
+    static std::shared_ptr<Node> createNode(enums::NODE_TYPE node, std::string name); 
+
     static std::shared_ptr<AddOp> createAddOp(std::string name);
     static std::shared_ptr<MultOp> createMultOp(std::string name);
     static std::shared_ptr<Var> createVar(std::string name);

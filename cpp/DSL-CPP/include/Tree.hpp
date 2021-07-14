@@ -12,7 +12,7 @@ public:
     ~Tree() = default;
     Tree (NodePtr& rootNode): root_(rootNode) { }
 
-    NodePtr getRootPtr(){
+    NodePtr get_root(){
         return root_;
     } 
 

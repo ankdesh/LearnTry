@@ -14,7 +14,7 @@ public:
         return name_;
     }
     
-    std::string type_str() {
+    std::string typeStr() {
         return enums::to_str(type_);
     };
 
@@ -30,7 +30,7 @@ public:
         return children_.cend(); 
     }
 
-    void add_child(NodePtr childPtr) { 
+    void addChild(NodePtr childPtr) { 
          children_.push_back(childPtr);
     }
 
