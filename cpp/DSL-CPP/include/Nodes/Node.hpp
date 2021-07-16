@@ -31,7 +31,7 @@ public:
     }
 
     void addChild(NodePtr childPtr) { 
-         children_.push_back(childPtr);
+        children_.push_back(childPtr);
     }
 
 

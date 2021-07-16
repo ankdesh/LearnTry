@@ -57,5 +57,6 @@
         "ratio": "cpp",
         "iomanip": "cpp",
         "variant": "cpp"
-    }
+    },
+    "workbench.editor.enablePreview": false
 }

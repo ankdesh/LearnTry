@@ -1,5 +1,13 @@
 #include "Nodes/NodeGen.hpp"
 #include "TestNodes.hpp"
+#include <memory>
+
+bool testCreateNode(){
+    auto addOp = NodeGen::createNode(enums::NODE_TYPE::AddOp,"AddOp");
+    bool result = (std::static_pointer_cast<AddOp>(addOp)->name() == "AddOp");
+
+    return result;
+}
 
 bool testOps(){
     auto addOp1 = NodeGen::createAddOp("AddOp1");
