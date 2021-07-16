@@ -2,6 +2,7 @@
 #define TESTNODES_HPP
 
 bool testCreateNode();
+bool testRootNode();
 bool testOps();
 bool testVar();
 bool testIndexVar();

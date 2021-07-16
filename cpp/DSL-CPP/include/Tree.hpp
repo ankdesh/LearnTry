@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "Nodes/Node.hpp"
+#include "Nodes/NodeGen.hpp"
 
 template <typename T> class Tree 
 {
@@ -10,21 +11,23 @@ template <typename T> class Tree
 
 public:
     ~Tree() = default;
-    Tree (NodePtr& rootNode): root_(rootNode) { }
 
     NodePtr get_root(){
         return root_;
     } 
 
 protected:
-    Tree() = delete;
     Tree(Tree &&) = delete;
     Tree(const Tree &) = delete;
     Tree &operator=(Tree &&) = delete;
     Tree &operator=(const Tree &) = delete;
 
-
 protected:
+    Tree (NodePtr rootNode): root_(rootNode) { }
+    Tree (std::string name){
+        root_ = NodeGen::createNode(enums::NODE_TYPE::RootNode, name);
+    }
+
     NodePtr root_; 
 
 };

@@ -34,7 +34,6 @@ public:
         children_.push_back(childPtr);
     }
 
-
 protected:
     Node() = delete;
     Node(Node &&) = delete;

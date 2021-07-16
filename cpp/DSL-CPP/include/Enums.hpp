@@ -7,9 +7,11 @@ namespace enums{
 
 enum class NODE_TYPE
 {
+    RootNode,
     AddOp,
     MultOp,
     IndexOp,
+    AssignOp,
     Var,
     IndexVar
 };

@@ -9,6 +9,13 @@ bool testCreateNode(){
     return result;
 }
 
+bool testRootNode() {
+    auto rootNode = NodeGen::createNode(enums::NODE_TYPE::RootNode,"RootNode");
+    bool result = (std::static_pointer_cast<AddOp>(rootNode)->name() == "RootNode");
+
+    return result;
+}
+
 bool testOps(){
     auto addOp1 = NodeGen::createAddOp("AddOp1");
     bool result1 = (addOp1->name() == "AddOp1");
@@ -35,4 +42,3 @@ bool testIndexVar() {
 
     return result1;
 }
-
