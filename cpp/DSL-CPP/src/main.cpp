@@ -14,6 +14,7 @@ int main(int argc, char const *argv[])
     std::cout << "IndexVarTest: " << testIndexVar() << std::endl;
 
     std::cout << "AST Build BottomUP: " << testBuildASTBottomUp() <<std::endl;
+    std::cout << "AST Build TopDown: " << testBuildASTTopDown() <<std::endl;
  
     return 0;
 }

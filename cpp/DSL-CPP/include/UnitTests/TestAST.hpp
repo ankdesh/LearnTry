@@ -4,5 +4,6 @@
 #include "AST.hpp"
 
 bool testBuildASTBottomUp();
+bool testBuildASTTopDown();
 
 #endif // TESTAST_HPP
