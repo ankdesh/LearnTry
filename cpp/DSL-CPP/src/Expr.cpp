@@ -1,6 +1,8 @@
 #include "Expr.hpp"
 #include "ExprGen.hpp"
 
+using namespace lang;
+
 Expr& Expr::operator + (const Expr& rhs) {
     
     // std::cout << "<" + rhs.name() + "> [add] attached to {" << this->name() + "}"; 

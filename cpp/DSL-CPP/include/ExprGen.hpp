@@ -8,6 +8,8 @@
 
 #include "Expr.hpp"
 
+namespace lang{
+
 class ExprGen
 {
 public:
@@ -28,7 +30,7 @@ private:
     
 };
 
-
+}
 
 
 #endif // EXPRGEN_HPP
