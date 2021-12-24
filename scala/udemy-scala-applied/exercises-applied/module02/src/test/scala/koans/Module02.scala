@@ -48,9 +48,9 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     
     val oneTwoThreeFour = oneTwo ::: threeFour
     
-    oneTwo should be (__)
-    threeFour should be (__)
-    oneTwoThreeFour should be (__)
+    oneTwo should be (oneTwo)
+    threeFour should be (List(3,4))
+    oneTwoThreeFour should be (List(1,2,3,4))
   }
 
   test ("List cons") {
@@ -58,8 +58,8 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     val newList = 1 :: twoThree
     val newList2 = twoThree.::(1)
 
-    newList should be (__)
-    newList2 should be (__)
+    newList should be (1 :: 2 :: 3 ::Nil)
+    newList2 should be (newList)
   }
 
   test ("Create a list and convert to Array") {
@@ -75,13 +75,13 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     val oneTwo = List(1,2)
     val threeFour = List(3,4)
 
-    concatListsToArray(oneTwo, threeFour) should equal (Array(1,2,3,4))
+    //concatListsToArray(oneTwo, threeFour) should equal (Array(1,2,3,4))
   }
 
   test ("Take two arrays, and concatenate them in a list") {
     def concatArraysToList(a1 : Array[Int], a2 : Array[Int]) : List[Int] = {
       // replace this with the correct implementation
-      List(0)
+      a1.toList ::: a2.toList
     }
 
     val oneTwo = Array(1,2)
@@ -100,10 +100,10 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     t._5 should be ("too")
 
     // Arity is the number of arguments
-    t.productArity should be (__)
+    t.productArity should be (5)
 
     // and you can iterate over the arguments too
-    t.productIterator.next should be (__)
+    t.productIterator.next should be (0)
   }
 
   test ("Map a tuple to strings") {
@@ -111,7 +111,7 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
 
     // replace the following with the correct code to convert tuple t
     // to a list of strings
-    val l = Nil
+    val l = List(t._1.toString, t._2.toString, t._3.toString, t._4.toString, t._5.toString)
 
     l should be (List("0", "u", "8", "1", "too"))
   }
@@ -120,17 +120,17 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     var getSet = Set("Ready", "Steady")
 
     // Add a line below to satisfy the test
-
+    getSet += "Go!"
     getSet should be (Set("Ready", "Steady", "Go!"))
     
     // What happens if you make the var a val above? Why?
   }
 
   test ("Mutable set in a val") {
-    var getSet = scala.collection.mutable.Set("Ready", "Steady")
+    val getSet = scala.collection.mutable.Set("Ready", "Steady")
 
     // Add a line below to satisfy the test
-
+    getSet += "Go!"
     getSet should be (Set("Ready", "Steady", "Go!"))
 
     // what happens if you make the var a val above? Why? Is this a good idea?
@@ -143,15 +143,15 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     mutMap += (2 -> "Dos")
     mutMap += (3 -> "Tres")
 
-    mutMap(2) should be (__)
+    mutMap(2) should be ("Dos")
 
     mutMap += (2 -> "Two")
 
-    mutMap(2) should be (__)
+    mutMap(2) should be ("Two")
 
     // What happens if you uncomment the line below? Why?
-    // mutMap += (2 -> 2)
-    mutMap(2) should be (__)
+    //mutMap += (2 -> 2)
+    mutMap(2) should be ("Two")
   }
 
   test ("Mutable map in a val") {
@@ -161,18 +161,18 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     mutMap += (2 -> "Dos")
     mutMap += (3 -> "Tres")
 
-    mutMap(2) should be (__)
+    mutMap(2) should be ("Dos")
 
     mutMap(2) = "Two"
 
-    mutMap(2) should be (__)
+    mutMap(2) should be ("Two")
 
     mutMap += (2 -> "Deux")
 
-    mutMap(2) should be (__)
+    mutMap(2) should be ("Deux")
 
     // What happens if you uncomment the line below? Why?
     // mutMap += (2 -> 2)
-    mutMap(2) should be (__)
+    mutMap(2) should be ("Deux")
   }
 }

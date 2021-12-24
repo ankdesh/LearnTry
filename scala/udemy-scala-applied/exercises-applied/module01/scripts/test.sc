@@ -18,6 +18,8 @@ def add (x: Int, y: Int) :Unit  = {
 }
 println(add(3,4))
 
+val oneTwo = List(1,2)
+oneTwo == List(1,2)
 
 
 
