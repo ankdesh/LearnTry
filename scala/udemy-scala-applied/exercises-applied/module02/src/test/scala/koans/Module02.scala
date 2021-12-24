@@ -26,7 +26,7 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     val concat = greetStrings(0) + greetStrings(1) + greetStrings(2)
 
     // and what should this equal?
-    concat should be (__)
+    concat should be ("Hello, World")
   }
 
   test ("Array creation") {
@@ -34,12 +34,12 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     val numNames = Array("zero", "one", "two")
     val numNames2 = Array.apply("zero", "one", "two")
 
-    numNames.length should be (__)
-    numNames2.length should be (__)
+    numNames.length should be (3)
+    numNames2.length should be (3)
 
-    (numNames == numNames2) should be (__)
+    (numNames == numNames2) should be (false)
 
-    (numNames sameElements numNames2) should be (__)
+    (numNames sameElements numNames2) should be (true)
   }
 
   test ("List immutability") {

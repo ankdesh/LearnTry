@@ -11,6 +11,9 @@ arr.mkString(" ")
 
 val xs1 = List(1,2,3)
 val xs2 = 0 :: xs1
+val xs3 = xs1
+
+val sc = 0 :: 1 :: xs1
 
 var xs3 = List(4,5,6)
 xs3 = xs2 ::: xs3  // because it's a var

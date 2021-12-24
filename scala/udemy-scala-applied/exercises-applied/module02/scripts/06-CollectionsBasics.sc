@@ -1,6 +1,8 @@
 val array1: Array[Int] = Array(1,2,3)
 val list1: List[String] = List("scooby", "dooby", "doo")
 
+var arr = Array(1,2 )
+
 val array2 = Array(1,2,3)
 val list2 = List("scooby", "dooby", "doo")
 
@@ -25,7 +27,7 @@ val listc = lista ::: listb
 
 // common beginner mistake:
 
-// val listd = lista :: listb
+val listd = lista :: listb
 
 val v = Vector(1,2,3,4)
 

@@ -1,4 +1,4 @@
-1 + 2
+1 + 3
 
 val x = 1 + 2
 
@@ -52,5 +52,4 @@ val divided = try {
 catch {
   case ae: ArithmeticException => 0
 }
-
 

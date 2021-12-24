@@ -6,3 +6,6 @@ model.tfl*
 a.out
 *.swp
 googletest/
+target/
+null/
+.idea/
