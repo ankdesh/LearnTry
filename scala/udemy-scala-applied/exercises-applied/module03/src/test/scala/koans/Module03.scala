@@ -29,8 +29,21 @@ class Module03 extends KoanSuite with Matchers with SeveredStackTraces {
   // The tests below should exercise all of these requirements although they
   // are far from exhaustive
 
+  class ComplexNum (val real: Double, val imaginary: Double){
+    def this(r: Double) = this(r,0.0)
+
+    def +(other: ComplexNum): ComplexNum =
+      new ComplexNum(real + other.real, imaginary + other.imaginary)
+
+    def +(doubleNum : Double): ComplexNum =
+      new ComplexNum(real + doubleNum, imaginary)
+
+    override def toString : String = s"$real + ${imaginary}i"
+
+  }
+
   // UNCOMMENT BELOW
-  /* test ("Create a new Complex number and check the values for the real/imaginary parts") {
+   test ("Create a new Complex number and check the values for the real/imaginary parts") {
     val complex = new ComplexNum(4, 2)
 
     complex.real should be (4)
@@ -73,7 +86,7 @@ class Module03 extends KoanSuite with Matchers with SeveredStackTraces {
 
     complex.real should be (12)
     complex.imaginary should be (3.2)
-  } */
+  }
 
   // Extra credit - numbers with a negative imaginary part should be output
   // as 6.0 - 5.0i instead of 6.0 + -5.0i - if you have time, write a new test
