@@ -9,3 +9,4 @@ googletest/
 target/
 null/
 .idea/
+*.npz
