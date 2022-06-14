@@ -14,11 +14,15 @@ private:
 
     std::string name_;
     std::string phone_;
-    int id_;
-    static int id_counter_; 
+    int id_;                    
+    static int id_counter_; // Auto increment id
 
 public:
     ~Employee() = default;
+
+    std::string getName(){
+        return name_;
+    }
 
     static std::shared_ptr<Employee> make(std::string name, std::string phone){
         id_counter_++;
