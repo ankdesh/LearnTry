@@ -14,7 +14,7 @@ public:
     ~DirectoryIf() = default;
 
     virtual void add(std::shared_ptr<Employee> e) = 0; 
-    virtual void search(std::string name) = 0; 
+    virtual std::shared_ptr<Employee> search(std::string name) = 0; 
 };
 
 class EmpDirectory : DirectoryIf
@@ -24,10 +24,10 @@ public:
     ~EmpDirectory() = default;
 
     void add(std::shared_ptr<Employee> e) override {
-
+        repo_->add(e);
     } 
-    void search(std::string name) override {
-
+    std::shared_ptr<Employee> search(std::string name) override {
+        return repo_->read(name);
     }     
 
     static std::shared_ptr<EmpDirectory> make(std::string repo_type);
