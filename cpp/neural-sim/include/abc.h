@@ -1,21 +1,22 @@
-/// 
-/// @file   counterAbstract.h
-/// @Author a.deshwal@samsung.com
-/// @brief  Includes declararions of Abstract class for counters 
-/// This file contains decalration of Abstract class for counters 
-/// of different types which are used in different level of stream 
-/// Comparision
+#ifndef ABC_HPP
+#define ABC_HPP
 
-#ifndef COUNTERABSTRACT_H_
-#define COUNTERABSTRACT_H_
+#include <iostream>
 
-#include <string>
+namespace temp {
 
-/// Abstract Counter class
-class CounterAbstract{
-  public:
-    void update();
-    virtual std::string resultAsString() const = 0;
- };
+class Abc {
+public:
+  ~Abc() = default;
 
-#endif
+private:
+  Abc() = delete;
+  Abc(Abc &&) = delete;
+  Abc(const Abc &) = delete;
+  Abc &operator=(Abc &&) = delete;
+  Abc &operator=(const Abc &) = delete;
+};
+
+} // namespace temp
+
+#endif // ABC_HPP
