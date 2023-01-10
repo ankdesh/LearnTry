@@ -1,0 +1,10 @@
+# Configurable Neural simulator 
+This dir hosts a neural simualator based on SST simulator framework
+
+
+## Setup 
+Update and use scritps/sst-source-asd.sh for setting environment for SST 
+simulator environment.
+Needs installtion of SST core. Use following command to build SST-core
+$ ./configure --prefix=$SST_CORE_INSTALL
+
