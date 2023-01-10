@@ -1,8 +1,6 @@
 #ifndef HW_MODULE_HPP
 #define HW_MODULE_HPP
 
-#include <iostream>
-
 namespace neural_sim {
 
 class HWBlock {
@@ -20,7 +18,7 @@ private:
 class ActiveHWBlock : public HWBlock {
 public:
   ~ActiveHWBlock() = default;
-
+  
 private:
   ActiveHWBlock() = delete;
   ActiveHWBlock(ActiveHWBlock &&) = delete;
