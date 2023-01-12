@@ -7,10 +7,10 @@
 namespace SST {
 namespace NeuralProcessor{
 
-class CP2CoreEvent : public SST::Event {
+class CP2CompCoreEvent : public SST::Event {
 public:
-  ~CP2CoreEvent() = default;
-  CP2CoreEvent() : SST::Event() { }
+  ~CP2CompCoreEvent() = default;
+  CP2CompCoreEvent() : SST::Event() { }
 
     // Example data members
     std::vector<char> payload;
@@ -23,14 +23,14 @@ public:
     }
 
     // Register this event as serializable
-    ImplementSerializable(SST::NeuralProcessor::CP2CoreEvent);
+    ImplementSerializable(SST::NeuralProcessor::CP2CompCoreEvent);
 
 private:
 
-  CP2CoreEvent(CP2CoreEvent &&) = delete;
-  CP2CoreEvent(const CP2CoreEvent &) = delete;
-  CP2CoreEvent &operator=(CP2CoreEvent &&) = delete;
-  CP2CoreEvent &operator=(const CP2CoreEvent &) = delete;
+  CP2CompCoreEvent(CP2CompCoreEvent &&) = delete;
+  CP2CompCoreEvent(const CP2CompCoreEvent &) = delete;
+  CP2CompCoreEvent &operator=(CP2CompCoreEvent &&) = delete;
+  CP2CompCoreEvent &operator=(const CP2CompCoreEvent &) = delete;
 };
 
 } // namespace NeuralProcessor

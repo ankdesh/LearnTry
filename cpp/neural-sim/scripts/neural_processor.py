@@ -1,16 +1,12 @@
 import sst
 
-cp0 = sst.Component("cp0", "NeuralProcessor.CommandProcessor")
-cp1 = sst.Component("cp1", "NeuralProcessor.CommandProcessor")
+cp = sst.Component("cp", "NeuralProcessor.CommandProcessor")
+compcore = sst.Component("compcore", "NeuralProcessor.CompCore")
 
-cp0.addParams({
-    "command_file" : "command.txt"
-    })
-
-cp1.addParams({
+cp.addParams({
     "command_file" : "command.txt"
     })
 
 
 link = sst.Link("component_link")
-link.connect( (cp0, "port", "1ns"), (cp1, "port", "1ns") )
+link.connect( (cp, "port", "10s"), (compcore, "port", "10s") )
