@@ -8,6 +8,8 @@
 #include <sst/core/event.h>
 #include <sst/core/sst_config.h>
 
+#include "events.h"
+
 namespace SST {
 namespace NeuralProcessor{
 
@@ -46,14 +48,14 @@ public:
 
     CommandProcessor(SST::ComponentId_t id, SST::Params& params);
 private:
-/*    CommandProcessor() = delete;
+    CommandProcessor() = delete;
     CommandProcessor(CommandProcessor &&) = delete;
     CommandProcessor(const CommandProcessor &) = delete;
     CommandProcessor &operator=(CommandProcessor &&) = delete;
-    CommandProcessor &operator=(const CommandProcessor &) = delete; */
+    CommandProcessor &operator=(const CommandProcessor &) = delete; 
 
     // Event handler, called when an event is received on our link
-    void handleEvent(SST::Event *ev);
+    void handleEvent(SST::NeuralProcessor::CP2CoreEvent *ev);
 
     // Links
     SST::Link* link;

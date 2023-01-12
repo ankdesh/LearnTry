@@ -15,12 +15,13 @@ CommandProcessor::~CommandProcessor() {
 
 }
 
-void CommandProcessor::handleEvent(SST::Event *ev)
+void CommandProcessor::handleEvent(SST::NeuralProcessor::CP2CoreEvent *ev)
 {
-    auto *event = dynamic_cast<SST::EmptyEvent*>(ev);
+    auto *event = dynamic_cast<SST::NeuralProcessor::CP2CoreEvent*>(ev);
     
     if (event) {
-        
+        for (auto val: event->payload)
+        std::cout << "Recieved Event" << val;
         // Receiver has the responsiblity for deleting events
         delete event;
 

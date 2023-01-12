@@ -10,14 +10,14 @@ SRC_DIRS := ./src
 .PHONY: all
 all: $(BUILD_DIR)/$(TARGET_LIB) install
 
-SRCS := $(shell find $(SRC_DIRS) -name '*.cc')
+SRCS := $(shell find $(SRC_DIRS) -name '*.cpp')
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 
 $(BUILD_DIR)/$(TARGET_LIB): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
 # Build step for C++ source
-$(BUILD_DIR)/%.cc.o: %.cc
+$(BUILD_DIR)/%.cpp.o: %.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -I./include -c $< -o $@
 
