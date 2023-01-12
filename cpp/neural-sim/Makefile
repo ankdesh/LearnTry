@@ -3,16 +3,14 @@ CXX=$(shell sst-config --CXX)
 CXXFLAGS=$(shell sst-config --ELEMENT_CXXFLAGS)
 LDFLAGS=$(shell sst-config --ELEMENT_LDFLAGS)
 
-TARGET_LIB = libsimpleExternalElement.so
+TARGET_LIB = libNeuralProcessor.so
 BUILD_DIR := ./build
 SRC_DIRS := ./src 
 
 .PHONY: all
 all: $(BUILD_DIR)/$(TARGET_LIB) install
 
-#SRCS =  $(shell echo src/*.cc)
 SRCS := $(shell find $(SRC_DIRS) -name '*.cc')
-#OBJS = $(SRCS:.cc=.o)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 
 $(BUILD_DIR)/$(TARGET_LIB): $(OBJS)
@@ -24,9 +22,9 @@ $(BUILD_DIR)/%.cc.o: %.cc
 	$(CXX) $(CXXFLAGS) -I./include -c $< -o $@
 
 install:
-	sst-register simpleExternalElement simpleExternalElement_LIBDIR=$(CURDIR)
-	sst-register SST_ELEMENT_SOURCE simpleExternalElement=$(CURDIR)
-#	sst-register SST_ELEMENT_TESTS  simpleExternalElement=$(CURDIR)/../tests
+	sst-register NeuralProcessor NeuralProcessor_LIBDIR=$(CURDIR)/build
+	sst-register SST_ELEMENT_SOURCE NeuralProcessor=$(CURDIR)/src
+	sst-register SST_ELEMENT_TESTS  NeuralProcessor=$(CURDIR)/../tests
 
 clean:
 	rm -r $(BUILD_DIR)
