@@ -10,7 +10,7 @@
 // distribution.
 
 #include <sst/core/sst_config.h>
-#include "simpleExternalElement.h"
+#include "../include/simpleExternalElement.h"
 
 SimpleExternalElement::SimpleExternalElement( SST::ComponentId_t id, SST::Params& params ) :
 	SST::Component(id), repeats(0) {
