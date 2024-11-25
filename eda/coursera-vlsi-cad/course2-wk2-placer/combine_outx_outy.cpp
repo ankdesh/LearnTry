@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     std::string prefix = argv[1];
     std::string input1 = prefix + ".outx";
     std::string input2 = prefix + ".outy";
-    std::string output = prefix + ".mergedout";
+    std::string output = prefix;
 
     // Read and merge files
     readAndMergeFiles(input1, input2, output);

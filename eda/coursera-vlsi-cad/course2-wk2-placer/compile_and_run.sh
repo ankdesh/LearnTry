@@ -31,3 +31,7 @@ echo "Solving Equations..."
 
 echo "Combining Results..."
 ./combiner ${base_name}
+
+# Move to results folder
+mkdir -p results/
+mv ${base_name} results/
