@@ -144,7 +144,7 @@ void writeMatrixACOO(const std::string& filename, const std::vector<std::vector<
     for (int i = 0; i < G; ++i) {
         for (int j = 0; j < G; ++j) {
             if (A[i][j] != 0) {
-                outputFile << i + 1 << " " << j + 1 << " " << A[i][j] << "\n";
+                outputFile << i << " " << j << " " << A[i][j] << "\n";
             }
         }
     }

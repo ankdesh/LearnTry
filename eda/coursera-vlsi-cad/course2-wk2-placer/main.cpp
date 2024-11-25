@@ -2,7 +2,6 @@
 #include <fstream>
 #include "qp3_solver.h"
 
-
 /**
  * Reads input from a file and populates the vectors of gates and pads.
  * @param filename The name of the input file.
@@ -63,7 +62,6 @@ void readInputFile(const std::string& filename, std::vector<Gate>& gates, std::v
  * @param argv Array of command-line argument strings.
  * @return 0 on success, non-zero on failure.
  */
-
 int main(int argc, char* argv[]) {
     // Check if the correct number of command-line arguments are provided
     if (argc != 3) {
@@ -74,6 +72,9 @@ int main(int argc, char* argv[]) {
     // Extract input and output file names from command-line arguments
     std::string inputFilename = argv[1];
     std::string outputFilename = argv[2];
+    std::string outputFilenameA = outputFilename + ".outA";
+    std::string outputFilenameBx = outputFilename + ".outBx";
+    std::string outputFilenameBy = outputFilename + ".outBy";
 
     // Declare vectors to store gates and pads
     std::vector<Gate> gates;
@@ -107,8 +108,38 @@ int main(int argc, char* argv[]) {
     genMatrixA(C, pads, nets, A);
 
     // Writes matrix A to outputfile in COO format with nnz values
-    writeMatrixACOO(outputFilename, A);
+    writeMatrixACOO(outputFilenameA, A);
+
+    // Declare vectors to store Bx and By
+    std::vector<double> vectorBx;
+    std::vector<double> vectorBy;
+
+    // Generate vectors Bx and By
+    genVectorB(pads, nets, gates.size(), vectorBx, vectorBy);
+
+    // Write vector Bx to output file in column format
+    {
+        std::ofstream outputFile(outputFilenameBx);
+        if (!outputFile.is_open()) {
+            throw std::runtime_error("Failed to open file for writing");
+        }
+        for (const auto& value : vectorBx) {
+            outputFile << value << "\n";
+        }
+        outputFile.close();
+    }
+
+    // Write vector By to output file in column format
+    {
+        std::ofstream outputFile(outputFilenameBy);
+        if (!outputFile.is_open()) {
+            throw std::runtime_error("Failed to open file for writing");
+        }
+        for (const auto& value : vectorBy) {
+            outputFile << value << "\n";
+        }
+        outputFile.close();
+    }
 
     return 0;
 }
-
