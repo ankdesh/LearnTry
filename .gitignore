@@ -10,3 +10,5 @@ target/
 null/
 .idea/
 *.npz
+.aider*
+.env

@@ -1,60 +1,8 @@
 #include "qp3_solver.h"
+#include <fstream>
+#include <algorithm>
 
-/**
- * Reads input from a file and populates the vectors of gates and pads.
- * @param filename The name of the input file.
- * @param gates Reference to the vector where gates will be stored.
- * @param pads Reference to the vector where pads will be stored.
- * @param N Reference to an integer that will store the number of nets.
- * @throw std::runtime_error if the file was not successfully read.
- */
-void readInputFile(const std::string& filename, std::vector<Gate>& gates, std::vector<Pad>& pads, int& N) {
-    std::ifstream inputFile(filename);
-    if (!inputFile) {
-        throw std::runtime_error("Error opening file: " + filename);
-    }
-
-    int G;
-    inputFile >> G >> N;
-
-    gates.resize(G);
-
-    for (int i = 0; i < G; ++i) {
-        int gateID, M;  // M is the number of nets connected to each gate
-        inputFile >> gateID >> M;
-        if (gateID <= 0 || gateID > G) {
-            throw std::runtime_error("Invalid gate ID: " + std::to_string(gateID));
-        }
-        gates[i].gateID = gateID;
-        gates[i].connectedNets.resize(M);
-
-        for (int j = 0; j < M; ++j) {
-            inputFile >> gates[i].connectedNets[j];
-            if (gates[i].connectedNets[j] <= 0 || gates[i].connectedNets[j] > N) {
-                throw std::runtime_error("Invalid net ID: " + std::to_string(gates[i].connectedNets[j]));
-            }
-        }
-    }
-
-    int P;
-    inputFile >> P;
-
-    pads.resize(P);
-
-    for (int i = 0; i < P; ++i) {
-        int padID, netID;
-        float x, y;
-        inputFile >> padID >> netID >> x >> y;
-        if (padID <= 0 || padID > P) {
-            throw std::runtime_error("Invalid pad ID: " + std::to_string(padID));
-        }
-        pads[i] = {padID, netID, x, y};
-    }
-
-    inputFile.close();
-}
-
-void genConnMatrix(const std::vector<Gate>& gates, const std::vector<Net>& nets, int G, std::vector<std::vector<int>>& C) {
+void genConnMatrix(const std::vector<Gate>& gates, const std::vector<Net>& nets, int G, std::vector<std::vector<double>>& C) {
     // Resize the matrix to be G x G
     C.resize(G);
     for (auto& row : C) {
@@ -79,12 +27,7 @@ void genConnMatrix(const std::vector<Gate>& gates, const std::vector<Net>& nets,
     }
 }
 
-/**
- * Checks if a given matrix is symmetrical and has all diagonal elements set to zero.
- * @param matrix The matrix to check.
- * @throw std::runtime_error if the matrix is not symmetrical or diagonal elements are not zero.
- */
-void checkSymmetryAndDiagonals(const std::vector<std::vector<int>>& matrix) {
+void checkSymmetryAndDiagonals(const std::vector<std::vector<double>>& matrix) {
     int n = matrix.size();
     if (n == 0 || any_of(matrix.begin(), matrix.end(), [&](const auto& row){ return row.size() != n; })) {
         throw std::runtime_error("Matrix is not square");
@@ -102,12 +45,6 @@ void checkSymmetryAndDiagonals(const std::vector<std::vector<int>>& matrix) {
     }
 }
 
-/**
- * Generates a vector of nets based on the given gates and the number of nets.
- * @param gates Reference to the vector of gates.
- * @param N The total number of nets in the design.
- * @param nets Reference to the vector where the nets will be stored.
- */
 void genNetVector(const std::vector<Gate>& gates, const int N, std::vector<Net>& nets) {
     nets.resize(N);
 
@@ -125,71 +62,93 @@ void genNetVector(const std::vector<Gate>& gates, const int N, std::vector<Net>&
     }
 }
 
-/**
- * Main function to process input and output files.
- * @param argc Number of command-line arguments.
- * @param argv Array of command-line argument strings.
- * @return 0 on success, non-zero on failure.
- */
-int main(int argc, char* argv[]) {
-    // Check if the correct number of command-line arguments are provided
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <input_file> <output_file>" << std::endl;
-        return 1;
+void genMatrixA(const std::vector<std::vector<double>>& C, const std::vector<Pad>& pads, const std::vector<Net>& nets, std::vector<std::vector<double>>& A) {
+    int G = C.size();
+    A.resize(G, std::vector<double>(G, 0));
+
+    // Step 1: Add all elements of the row and put the sum in diagonal element of the row
+    for (int i = 0; i < G; ++i) {
+        int sum = std::accumulate(C[i].begin(), C[i].end(), 0);
+        A[i][i] = sum;
     }
 
-    // Extract input and output file names from command-line arguments
-    std::string inputFilename = argv[1];
-    std::string outputFilename = argv[2];
-
-    // Declare vectors to store gates and pads
-    std::vector<Gate> gates;
-    std::vector<Pad> pads;
-
-    // Variable to store the number of nets
-    int N;
-
-    // Read input data from the specified file
-    readInputFile(inputFilename, gates, pads, N) ;
-
-    // Print the read values in a readable format on the screen
-    std::cout << "Number of Gates (G): " << gates.size() << std::endl;
-    for (const auto& gate : gates) {
-        std::cout << "Gate ID: " << gate.gateID << ", Connected Nets: ";
-        for (int netID : gate.connectedNets) {
-            std::cout << netID << " ";
+    // Step 2: Negate all the non-diagonal entries
+    for (int i = 0; i < G; ++i) {
+        for (int j = 0; j < G; ++j) {
+            if (i != j) {
+                A[i][j] = -C[i][j];
+            }
         }
-        std::cout << std::endl;
     }
 
-    std::cout << "Number of Pads (P): " << pads.size() << std::endl;
+    // Step 3: Go through the pads and add 1 to diagonal elements of row corresponding to the connected gates
     for (const auto& pad : pads) {
-        std::cout << "Pad ID: " << pad.padID << ", Net ID: " << pad.netID
-                  << ", Position: (" << pad.x << ", " << pad.y << ")" << std::endl;
-    }
-
-    std::cout << "Number of Nets (N): " << N << std::endl;
-
-    // Declare a vector to store nets
-    std::vector<Net> nets;
-
-    // Generate the net vector based on the gates and number of nets
-    genNetVector(gates, N, nets);
-
-    // Open the output file for writing
-    std::ofstream outputFile(outputFilename);
-    if (!outputFile) {
-        std::cerr << "Error opening output file: " << outputFilename << std::endl;
-        return 1; // Return error if output file cannot be opened
-    }
-
-    // Example output to verify the data was read and processed correctly
-    for (const auto& net : nets) {
-        outputFile << net.netID << " ";
-        for (int gateID : net.connectedGates) {
-            outputFile << gateID << " ";
+        int netID = pad.netID;
+        if (netID >= 1) { // Ensure netID is within the valid range
+            const auto& net = nets[netID - 1];
+            for (int gateID : net.connectedGates) {
+                if (gateID >= 1 && gateID <= G) { // Ensure gateID is within the valid range
+                    A[gateID - 1][gateID - 1] += 1;
+                }
+            }
         }
-        outputFile << std::endl;
     }
 }
 
+void genVectorB(const std::vector<Pad>& pads, const std::vector<Net>& nets, int G, std::vector<double>& vectorBx, std::vector<double>& vectorBy) {
+    // Resize vectors to match the number of gates
+    vectorBx.resize(G, 0.0);
+    vectorBy.resize(G, 0.0);
+
+    // Iterate through each pad and update the vectors
+    for (const auto& pad : pads) {
+        int netID = pad.netID;
+        if (netID >= 1 && netID <= nets.size()) { // Ensure netID is within the valid range
+            const auto& net = nets[netID - 1];
+            for (int gateID : net.connectedGates) {
+                if (gateID >= 1 && gateID <= G) { // Ensure gateID is within the valid range
+                    vectorBx[gateID - 1] += pad.x;
+                    vectorBy[gateID - 1] += pad.y;
+                }
+            }
+        }
+    }
+}
+
+void writeMatrixACOO(const std::string& filename, const std::vector<std::vector<double>>& A) {
+    int G = A.size();
+    if (G == 0 || any_of(A.begin(), A.end(), [&](const auto& row){ return row.size() != G; })) {
+        throw std::runtime_error("Matrix is not square");
+    }
+
+    // Count the number of non-zero elements
+    int nnz = 0;
+    for (int i = 0; i < G; ++i) {
+        for (int j = 0; j < G; ++j) {
+            if (A[i][j] != 0) {
+                ++nnz;
+            }
+        }
+    }
+
+    // Open the output file
+    std::ofstream outputFile(filename);
+    if (!outputFile.is_open()) {
+        throw std::runtime_error("Failed to open file for writing");
+    }
+
+    // Write the header (n nnz)
+    outputFile << G << " " << nnz << "\n";
+
+    // Write the non-zero elements in COO format
+    for (int i = 0; i < G; ++i) {
+        for (int j = 0; j < G; ++j) {
+            if (A[i][j] != 0) {
+                outputFile << i + 1 << " " << j + 1 << " " << A[i][j] << "\n";
+            }
+        }
+    }
+
+    // Close the output file
+    outputFile.close();
+}
