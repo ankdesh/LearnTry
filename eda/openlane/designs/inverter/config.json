@@ -4,6 +4,7 @@
         "flow": [
             "Yosys.Synthesis",
             "OpenROAD.CheckSDCFiles",
+	    "OpenROAD.STAPrePNR",
             "OpenROAD.Floorplan",
             "OpenROAD.TapEndcapInsertion",
             "OpenROAD.GeneratePDN",
@@ -29,13 +30,13 @@
     "DIE_AREA": [
         0,
         0,
-        50,
-        50
+        40,
+        40
     ],
     "PL_TARGET_DENSITY": 0.75,
     "FP_PDN_AUTO_ADJUST": false,
-    "FP_PDN_VPITCH": 25,
-    "FP_PDN_HPITCH": 25,
+    "FP_PDN_VPITCH": 10,
+    "FP_PDN_HPITCH": 10,
     "FP_PDN_VOFFSET": 5,
     "FP_PDN_HOFFSET": 5,
     "//": "With those two defined, the repair design step should do nothing:",
