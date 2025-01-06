@@ -1,0 +1,20 @@
+** sch_path: /home/ankdesh/explore/eda/xschem_try/asd_inv.sch
+**.subckt asd_inv
+vcc net1 GND 1.8v
+vcc1 vin GND pulse(0 1.8 1ns 1ns 1ns 5ns 10ns)
+XM1 vout vin GND GND sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+XM2 vout vin vcc vcc sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1 ad='int((nf+1)/2) * W/nf * 0.29' as='int((nf+2)/2) * W/nf * 0.29'
++ pd='2*int((nf+1)/2) * (W/nf + 0.29)' ps='2*int((nf+2)/2) * (W/nf + 0.29)' nrd='0.29 / W' nrs='0.29 / W'
++ sa=0 sb=0 sd=0 mult=1 m=1
+**** begin user architecture code
+
+.lib /home/ankdesh/explore/eda/open_pdks/sky130/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.tran 0.1n 100n
+.save all
+
+**** end user architecture code
+**.ends
+.GLOBAL GND
+.end
