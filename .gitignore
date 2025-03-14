@@ -12,3 +12,5 @@ null/
 *.npz
 .aider*
 .env
+obj_dir/
+*.vcd
