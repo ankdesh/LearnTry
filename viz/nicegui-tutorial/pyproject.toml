@@ -1,0 +1,13 @@
+[project]
+name = "nicegui-tutorial"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "nicegui>=2.19.0",
+    "pyqt5>=5.15.11",
+    "pyqtwebengine>=5.15.7",
+    "pywebview>=5.4",
+    "qtpy>=2.4.3",
+]
