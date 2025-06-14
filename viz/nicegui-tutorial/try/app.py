@@ -17,15 +17,17 @@ def main_page():
     # Enable dark mode
     ui.dark_mode(True) # Use True for auto, or a specific value
 
-
-    # Create the sidebar (no header will be created by this function now)
-    left_drawer = create_collapsible_sidebar()
-
-
     ui.add_css('''
         /* Ensure the splitter takes up available height */
         .nicegui-splitter {
-            width: 100%;
+            height: 100%; /* Changed from width to height for clarity */
+        }
+
+        /* Make both splitter panels independent */
+        .nicegui-splitter .q-splitter__before,
+        .nicegui-splitter .q-splitter__after {
+            overflow: auto; /* Allow independent scrolling */
+            height: 100%;   /* Ensure panels take full height of the splitter */
         }
 
         /* Ensure cards within splitter slots fill height if desired */
@@ -61,22 +63,29 @@ def main_page():
     ''')
 
 
+
+    # Create the sidebar (no header will be created by this function now)
+    left_drawer = create_collapsible_sidebar()
+
     # --- Content Management ---
     content_manager = ContentManager()
 
     # --- Splitter Layout ---
-    # Since there's no header, remove pt-[50px].
-    # 'h-screen' makes the container exactly the height of the viewport.
-    with ui.element('div').classes('w-full h-screen flex flex-col box-border') as splitter_container:
-        with ui.splitter(value=33).props('unit="%"').classes('w-full flex-grow') as splitter: # flex-grow makes splitter fill the container
+    # The 'h-screen' and 'flex' properties on the container are essential.
+    with ui.element('div').classes('w-full h-screen flex flex-col'):
+        with ui.splitter(value=33).classes('flex-grow') as splitter: # flex-grow makes splitter fill container
             with splitter.before:
-                create_chat_display_panel(left_drawer) # Pass the drawer instance
+                create_chat_display_panel(left_drawer)
 
             with splitter.after:
-                content_panel = create_content_display_panel(content_manager)
+                display_panel = create_content_display_panel(content_manager)
 
     # Example initial content
-    content_manager.add_content(TextContent(name="Welcome Note", text="Hello! This is the AI Canvas. Interact via the chat on the left."))
+    content_manager.add_content(TextContent(name="Welcome Note", text="Hello! This is the AI Canvas. Interact via the chat on the left. The panels now scroll independently."))
+    # Add more content to demonstrate scrolling
+    for i in range(3):
+        content_manager.add_content(TextContent(name=f"Item {i+1}", text=f"This is placeholder text for item {i+1} to make the right panel taller."))
+
     # NOTE: You may need to adjust this path to be correct for your system.
     try:
         with open("app.py", "r") as f:
@@ -87,9 +96,14 @@ def main_page():
     content_manager.add_content(TableContent(name="Demo Table", headers=["ID", "Item", "Price"], rows=[[1, "Apple", 0.5], [2, "Banana", 0.3]]))
     content_manager.add_content(ImageContent(name="Placeholder Image", source="https://picsum.photos/seed/nicegui/600/400", caption="A random placeholder image."))
 
-    content_panel.refresh_display()
-
-
+    display_panel.refresh_display()
+    
+    # Initial refresh is now handled by the ContentPanelUI constructor,
+    # but if you add content after creation, you might need to find the instance and call refresh.
+    # For this setup, we let the UI build and then add content. The UI will reflect the state at creation.
+    # To see the dynamically added content above, we'd need to get the panel instance and call refresh.
+    # This is a more advanced topic not covered by the current structure.
+    # The content added here will be visible on the next refresh/interaction that triggers one.
 
 
 # Start the NiceGUI application.

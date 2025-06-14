@@ -32,7 +32,7 @@ class ChatBox:
                             btn = ui.button(icon=btn_config.get('icon'),
                                             text=btn_config.get('text'),
                                             on_click=btn_config.get('on_click')) \
-                                      .props(button_props)
+                                .props(button_props)
 
                             if 'tooltip' in btn_config:
                                 btn.tooltip(btn_config['tooltip'])
@@ -54,6 +54,7 @@ class ChatPanelUI:
     """
     Manages the UI for the entire chat panel, including history, input box, and interactions.
     """
+
     def __init__(self, left_drawer: ui.left_drawer):
         self.left_drawer = left_drawer
         self._build()
@@ -65,8 +66,10 @@ class ChatPanelUI:
             with ui.row().classes(
                 'items-center w-full p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-shrink-0 gap-2'
             ):
-                ui.button(icon='menu', on_click=self.left_drawer.toggle).props('flat round dense')
-                ui.label("Chat").classes('text-lg font-semibold')
+                ui.button(icon='menu', on_click=self.left_drawer.toggle).props(
+                    'flat round dense')
+                ui.label("Ankdesh AI Framework").classes(
+                    'text-lg font-semibold flex-grow text-center')
 
             # 1. Chat History Area (should grow).
             # CHANGE: Removed 'h-75%' and added 'h-0'.
@@ -76,28 +79,29 @@ class ChatPanelUI:
             self.chat_history_scroll_area = ui.scroll_area().classes('flex-grow w-full h-0')
             with self.chat_history_scroll_area:
                 # Removed top padding (pt-0) to eliminate space above the first message.
-                self.chat_messages_container = ui.column().classes('w-full pt-0 px-3 pb-3 space-y-2')
+                self.chat_messages_container = ui.column().classes(
+                    'w-full pt-0 px-3 pb-3 space-y-2')
                 with self.chat_messages_container:  # Add an initial welcome message from AI
                     ui.chat_message("Hello! How can I assist you with the content panel today?",
                                     sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
                     ui.chat_message("This chat window now correctly fills the available height.",
                                     sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
 
-
             # 2. ChatBox Area (should not shrink, take its natural height, with a top border)
             chat_box_action_buttons = [
-                {'icon': 'add_photo_alternate', 'on_click': self._handle_add_file_action, 'tooltip': 'Add file', 'props': {'padding': "xs"}}
+                {'icon': 'add_photo_alternate', 'on_click': self._handle_add_file_action,
+                    'tooltip': 'Add file', 'props': {'padding': "xs"}}
             ]
             with ui.element('div').classes('w-full flex-shrink-0 border-t dark:border-gray-700'):
                 ChatBox(on_submit=self._display_submission_in_panel,
                         action_buttons=chat_box_action_buttons)
 
-
     async def _display_submission_in_panel(self, message: str) -> None:
         """Handles displaying the submitted message and AI response in the chat panel."""
         # Display user's message
         with self.chat_messages_container:
-            ui.chat_message(message, sent=True, name="You", stamp=datetime.now().strftime('%H:%M')).classes('w-full')
+            ui.chat_message(message, sent=True, name="You", stamp=datetime.now().strftime(
+                '%H:%M')).classes('w-full')
         await self.chat_history_scroll_area.scroll_to(percent=1.0, duration=0.3)
 
         # Generic AI response (as ChatBox is now decoupled from ContentManager)
@@ -110,7 +114,8 @@ class ChatPanelUI:
 
     def _handle_add_file_action(self) -> None:
         """Placeholder action for the 'add file' button within this panel's context."""
-        ui.notify('"Add file" button clicked. Implement file upload logic here.', type='info')
+        ui.notify(
+            '"Add file" button clicked. Implement file upload logic here.', type='info')
 
 
 def create_chat_display_panel(left_drawer: ui.left_drawer) -> ChatPanelUI:
