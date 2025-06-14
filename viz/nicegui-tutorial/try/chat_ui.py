@@ -60,23 +60,29 @@ class ChatPanelUI:
     def _build(self) -> None:
         """Builds the UI elements for the chat panel."""
         with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 flex flex-col overflow-hidden'):
-            ui.label("Chat with AI").classes(
-                'text-base font-medium p-3 pb-1 flex-shrink-0 border-b dark:border-gray-700')
-
-            self.chat_history_scroll_area = ui.scroll_area().classes('flex-grow w-full')
+            # 1. Chat History Area (should grow).
+            # CHANGE: Removed 'h-75%' and added 'h-0'.
+            # 'flex-grow' allows this element to expand and fill available vertical space.
+            # 'h-0' gives the element a base height of 0, which is a common pattern
+            # to ensure 'flex-grow' works predictably and fills all available space.
+            self.chat_history_scroll_area = ui.scroll_area().classes('flex-grow w-full h-0')
             with self.chat_history_scroll_area:
                 self.chat_messages_container = ui.column().classes('w-full p-3 space-y-2')
                 with self.chat_messages_container:  # Add an initial welcome message from AI
                     ui.chat_message("Hello! How can I assist you with the content panel today?",
                                     sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
+                    ui.chat_message("This chat window now correctly fills the available height.",
+                                    sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
 
+
+            # 2. ChatBox Area (should not shrink, take its natural height, with a top border)
             chat_box_action_buttons = [
                 {'icon': 'add_photo_alternate', 'on_click': self._handle_add_file_action, 'tooltip': 'Add file', 'props': {'padding': "xs"}}
             ]
-
             with ui.element('div').classes('w-full flex-shrink-0 border-t dark:border-gray-700'):
                 ChatBox(on_submit=self._display_submission_in_panel,
                         action_buttons=chat_box_action_buttons)
+
 
     async def _display_submission_in_panel(self, message: str) -> None:
         """Handles displaying the submitted message and AI response in the chat panel."""
@@ -89,7 +95,7 @@ class ChatPanelUI:
         ai_chat_response = f"I received your message: '{message}'. I am a simple echo bot now."
         if ai_chat_response:
             with self.chat_messages_container:
-                ui.chat_message("Hello! How can I assist you with the content panel today?",
+                ui.chat_message(f"Echo: {message}",
                                 sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
             await self.chat_history_scroll_area.scroll_to(percent=1.0, duration=0.3)
 

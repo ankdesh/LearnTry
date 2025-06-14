@@ -14,3 +14,4 @@ null/
 .env
 obj_dir/
 *.vcd
+__pycache__/

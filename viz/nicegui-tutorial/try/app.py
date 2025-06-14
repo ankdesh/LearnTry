@@ -21,17 +21,17 @@ def main_page():
 
     ui.add_css('''
         /* Ensure the splitter takes up available height */
-        .nicegui-splitter { /* The splitter element itself */
+        .nicegui-splitter {
             width: 100%;
         }
 
         /* Ensure cards within splitter slots fill height if desired */
-       .nicegui-splitter.q-splitter__panel.q-card {
+       .nicegui-splitter .q-splitter__panel .q-card {
             height: 100%;
             display: flex;
             flex-direction: column;
         }
-       .nicegui-splitter.q-splitter__panel.q-card.nicegui-column {
+       .nicegui-splitter .q-splitter__panel .q-card .nicegui-column {
             flex-grow: 1; /* Allows column to fill card height */
         }
         /* Ensure expansion items fill width */
@@ -62,10 +62,14 @@ def main_page():
     content_manager = ContentManager()
 
     # --- Splitter Layout ---
+    # CHANGE: Replaced 'min-h-screen' with 'h-screen' and added 'pt-[50px]'.
+    # 'h-screen' makes the container exactly the height of the viewport.
+    # 'pt-[50px]' adds padding at the top to prevent the fixed header from overlapping the content.
+    # This ensures the splitter has a clearly defined, maximized space to occupy.
     with ui.element('div').classes(
-        'w-full min-h-screen flex flex-col box-border pt-[0px]' # pt-[50px] for header, no bottom padding for fixed chatbox anymore
+        'w-full h-screen flex flex-col box-border pt-[50px]'
     ) as splitter_container:
-        with ui.splitter(value=33).props('unit="%"').classes('w-full flex-grow') as splitter: # Added flex-grow
+        with ui.splitter(value=33).props('unit="%"').classes('w-full flex-grow') as splitter: # flex-grow makes splitter fill the container
             with splitter.before:
                 create_chat_display_panel() # Use the new factory function
 
@@ -74,7 +78,13 @@ def main_page():
 
     # Example initial content
     content_manager.add_content(TextContent(name="Welcome Note", text="Hello! This is the AI Canvas. Interact via the chat on the left."))
-    content_manager.add_content(CodeContent(name="Sample Python", code=open("/home/ankdesh/temp/async_parser.py").read(), language="python"))
+    # NOTE: You may need to adjust this path to be correct for your system.
+    try:
+        with open("app.py", "r") as f:
+            content_manager.add_content(CodeContent(name="Sample Python", code=f.read(), language="python"))
+    except FileNotFoundError:
+         content_manager.add_content(CodeContent(name="Sample Python", code="print('Hello, World!')", language="python"))
+
     content_manager.add_content(TableContent(name="Demo Table", headers=["ID", "Item", "Price"], rows=[[1, "Apple", 0.5], [2, "Banana", 0.3]]))
     content_manager.add_content(ImageContent(name="Placeholder Image", source="https://picsum.photos/seed/nicegui/600/400", caption="A random placeholder image."))
 
