@@ -6,7 +6,7 @@ from nicegui import ui
 from content_manager import ContentManager, TextContent, CodeContent, TableContent, ImageContent # ImageContent was missing
 from chat_ui import create_chat_display_panel # Changed from ChatPanelUI
 from content_panel_ui import ContentPanelUI, create_content_display_panel
-from header_sidebar_ui import create_header_and_sidebar
+from header_sidebar_ui import create_collapsible_sidebar # Updated import
 
 
 # --- Main Application ---
@@ -17,7 +17,10 @@ def main_page():
     # Enable dark mode
     ui.dark_mode(True) # Use True for auto, or a specific value
 
-    left_drawer = create_header_and_sidebar()
+
+    # Create the sidebar (no header will be created by this function now)
+    left_drawer = create_collapsible_sidebar()
+
 
     ui.add_css('''
         /* Ensure the splitter takes up available height */
@@ -62,16 +65,12 @@ def main_page():
     content_manager = ContentManager()
 
     # --- Splitter Layout ---
-    # CHANGE: Replaced 'min-h-screen' with 'h-screen' and added 'pt-[50px]'.
+    # Since there's no header, remove pt-[50px].
     # 'h-screen' makes the container exactly the height of the viewport.
-    # 'pt-[50px]' adds padding at the top to prevent the fixed header from overlapping the content.
-    # This ensures the splitter has a clearly defined, maximized space to occupy.
-    with ui.element('div').classes(
-        'w-full h-screen flex flex-col box-border pt-[50px]'
-    ) as splitter_container:
+    with ui.element('div').classes('w-full h-screen flex flex-col box-border') as splitter_container:
         with ui.splitter(value=33).props('unit="%"').classes('w-full flex-grow') as splitter: # flex-grow makes splitter fill the container
             with splitter.before:
-                create_chat_display_panel() # Use the new factory function
+                create_chat_display_panel(left_drawer) # Pass the drawer instance
 
             with splitter.after:
                 content_panel = create_content_display_panel(content_manager)
@@ -89,6 +88,8 @@ def main_page():
     content_manager.add_content(ImageContent(name="Placeholder Image", source="https://picsum.photos/seed/nicegui/600/400", caption="A random placeholder image."))
 
     content_panel.refresh_display()
+
+
 
 
 # Start the NiceGUI application.

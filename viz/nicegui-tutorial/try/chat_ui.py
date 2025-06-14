@@ -54,12 +54,20 @@ class ChatPanelUI:
     """
     Manages the UI for the entire chat panel, including history, input box, and interactions.
     """
-    def __init__(self):
+    def __init__(self, left_drawer: ui.left_drawer):
+        self.left_drawer = left_drawer
         self._build()
 
     def _build(self) -> None:
         """Builds the UI elements for the chat panel."""
         with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 flex flex-col overflow-hidden'):
+            # Header for the chat panel with sidebar toggle
+            with ui.row().classes(
+                'items-center w-full p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-shrink-0 gap-2'
+            ):
+                ui.button(icon='menu', on_click=self.left_drawer.toggle).props('flat round dense')
+                ui.label("Chat").classes('text-lg font-semibold')
+
             # 1. Chat History Area (should grow).
             # CHANGE: Removed 'h-75%' and added 'h-0'.
             # 'flex-grow' allows this element to expand and fill available vertical space.
@@ -67,7 +75,8 @@ class ChatPanelUI:
             # to ensure 'flex-grow' works predictably and fills all available space.
             self.chat_history_scroll_area = ui.scroll_area().classes('flex-grow w-full h-0')
             with self.chat_history_scroll_area:
-                self.chat_messages_container = ui.column().classes('w-full p-3 space-y-2')
+                # Removed top padding (pt-0) to eliminate space above the first message.
+                self.chat_messages_container = ui.column().classes('w-full pt-0 px-3 pb-3 space-y-2')
                 with self.chat_messages_container:  # Add an initial welcome message from AI
                     ui.chat_message("Hello! How can I assist you with the content panel today?",
                                     sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
@@ -104,6 +113,6 @@ class ChatPanelUI:
         ui.notify('"Add file" button clicked. Implement file upload logic here.', type='info')
 
 
-def create_chat_display_panel() -> ChatPanelUI:
+def create_chat_display_panel(left_drawer: ui.left_drawer) -> ChatPanelUI:
     """Creates and returns an instance of the ChatPanelUI."""
-    return ChatPanelUI()
+    return ChatPanelUI(left_drawer)
