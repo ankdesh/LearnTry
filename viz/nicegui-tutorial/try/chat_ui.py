@@ -59,6 +59,19 @@ class ChatPanelUI:
         self.left_drawer = left_drawer
         self._build()
 
+    def _add_markdown_message(self, header: str, text: str) -> None:
+        """Adds a message with a header and markdown content to the chat panel."""
+        with self.chat_messages_container:
+            with ui.card().classes('w-full no-shadow border dark:border-gray-700'):
+                # Reduced padding for header section
+                with ui.card_section().classes('py-0.5 px-1 bg-gray-100 dark:bg-gray-800'):
+                    ui.label(header).classes('text-xs font-medium text-gray-600 dark:text-gray-400')
+                # Reduced padding for content section
+                with ui.card_section().classes('py-1 px-1'):
+                    ui.markdown(text).classes('text-sm dark:prose-invert max-w-none')
+        # Scroll after adding the message
+        ui.timer(0.1, lambda: self.chat_history_scroll_area.scroll_to(percent=1.0, duration=0.1), once=True)
+
     def _build(self) -> None:
         """Builds the UI elements for the chat panel."""
         with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 flex flex-col overflow-hidden'):
@@ -80,12 +93,12 @@ class ChatPanelUI:
             with self.chat_history_scroll_area:
                 # Removed top padding (pt-0) to eliminate space above the first message.
                 self.chat_messages_container = ui.column().classes(
-                    'w-full pt-0 px-3 pb-3 space-y-2')
+                    'w-full pt-0 px-3 pb-3 space-y-1') # Reduced space between messages
                 with self.chat_messages_container:  # Add an initial welcome message from AI
-                    ui.chat_message("Hello! How can I assist you with the content panel today?",
-                                    sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
-                    ui.chat_message("This chat window now correctly fills the available height.",
-                                    sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
+                    self._add_markdown_message(f"AI ({datetime.now().strftime('%H:%M')})",
+                                               "Hello! How can I assist you with the content panel today?")
+                    self._add_markdown_message(f"AI ({datetime.now().strftime('%H:%M')})",
+                                               "This chat window now correctly fills the available height.")
 
             # 2. ChatBox Area (should not shrink, take its natural height, with a top border)
             chat_box_action_buttons = [
@@ -98,19 +111,15 @@ class ChatPanelUI:
 
     async def _display_submission_in_panel(self, message: str) -> None:
         """Handles displaying the submitted message and AI response in the chat panel."""
+        user_header = f"You ({datetime.now().strftime('%H:%M')})"
         # Display user's message
-        with self.chat_messages_container:
-            ui.chat_message(message, sent=True, name="You", stamp=datetime.now().strftime(
-                '%H:%M')).classes('w-full')
-        await self.chat_history_scroll_area.scroll_to(percent=1.0, duration=0.3)
+        self._add_markdown_message(user_header, message)
 
         # Generic AI response (as ChatBox is now decoupled from ContentManager)
-        ai_chat_response = f"I received your message: '{message}'. I am a simple echo bot now."
-        if ai_chat_response:
-            with self.chat_messages_container:
-                ui.chat_message(f"Echo: {message}",
-                                sent=False, name="AI", stamp=datetime.now().strftime('%H:%M'))
-            await self.chat_history_scroll_area.scroll_to(percent=1.0, duration=0.3)
+        ai_header = f"AI ({datetime.now().strftime('%H:%M')})"
+        message = "\n\n```python\n\n" + open("dummy_server/sample_python.py", "r").read() + "\n\n```"
+        
+        self._add_markdown_message(ai_header, f"Echo: {message}")
 
     def _handle_add_file_action(self) -> None:
         """Placeholder action for the 'add file' button within this panel's context."""
