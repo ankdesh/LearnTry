@@ -39,9 +39,9 @@ async def file_event_generator(file_path: str, header_name: str, request: Reques
 @app.get("/stream-data")
 async def stream_data(request: Request) -> StreamingResponse:
     async def event_stream():
-        async for event in file_event_generator(REASON_FILE, "Rationale", request):
+        async for event in file_event_generator(REASON_FILE, "text", request):
             yield event
-        async for event in file_event_generator(PYTHON_FILE, "Answer", request):
+        async for event in file_event_generator(PYTHON_FILE, "code:python", request):
             yield event
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
