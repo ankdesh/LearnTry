@@ -32,7 +32,7 @@ async def file_event_generator(file_path: str, header_name: str, request: Reques
                 break
             json_payload = json.dumps({"header": header_name, "token": token+" "})
             yield f"data: {json_payload}\n\n"
-            await asyncio.sleep(0.05) # Small delay to simulate streaming and allow client to process
+            await asyncio.sleep(0.001) # Small delay to simulate streaming and allow client to process
     except FileNotFoundError:
         json_payload = json.dumps({"header": header_name, "token": f"Error: File {os.path.basename(file_path)} not found."})
         yield f"data: {json_payload}\n\n"
