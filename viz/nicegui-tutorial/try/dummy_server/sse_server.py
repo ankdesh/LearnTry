@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re # Import the regex module
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request
@@ -15,19 +16,23 @@ app = FastAPI()
 
 async def file_event_generator(file_path: str, header_name: str, request: Request) -> AsyncGenerator[str, None]:
     """
-    Reads a file word by word and yields SSE formatted events.
+    Reads a file word by word (including newlines) and yields SSE formatted events.
     """
     try:
         with open(file_path, 'r') as f:
-            for line in f:
-                if await request.is_disconnected():
-                    print(f"Client disconnected while reading {os.path.basename(file_path)}")
-                    break
-                for word in line.strip().split():
-                    if word: # Ensure word is not empty
-                        json_payload = json.dumps({"header": header_name, "token": word})
-                        yield f"data: {json_payload}\n\n"
-                        await asyncio.sleep(0.05) # Small delay to simulate streaming and allow client to process
+            content = f.read() # Read the entire content
+
+        # Use regex to find words (sequences of non-whitespace) and newlines
+        # r'\S+|\n' matches either one or more non-whitespace characters (\S+) OR a newline character (\n)
+        tokens = re.findall(r'\S+|\n', content)
+
+        for token in tokens:
+            if await request.is_disconnected():
+                print(f"Client disconnected while reading {os.path.basename(file_path)}")
+                break
+            json_payload = json.dumps({"header": header_name, "token": token+" "})
+            yield f"data: {json_payload}\n\n"
+            await asyncio.sleep(0.05) # Small delay to simulate streaming and allow client to process
     except FileNotFoundError:
         json_payload = json.dumps({"header": header_name, "token": f"Error: File {os.path.basename(file_path)} not found."})
         yield f"data: {json_payload}\n\n"

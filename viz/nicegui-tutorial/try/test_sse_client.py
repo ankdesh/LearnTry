@@ -6,7 +6,7 @@ import json
 from nicegui import ui # type: ignore
 
 # Import the UI components and managers from your existing files
-from content_manager import ContentManager
+from content_manager import ContentManager, CodeContent # Added CodeContent
 from chat_ui import create_chat_display_panel
 from content_panel_ui import create_content_display_panel
 from header_sidebar_ui import create_collapsible_sidebar
@@ -30,14 +30,14 @@ async def sse_data_generator():
                     # Process the incoming stream line by line
                     async for line in response.aiter_lines():
                         if line.startswith("data:"):
-                            json_data_str = line[len("data:"):].strip()
+                            json_data_str = line[len("data:"):]
                             if json_data_str:
                                 try:
                                     data = json.loads(json_data_str)
-                                    header = data.get("header", "System")
+                                    header = data.get("header")
                                     token = data.get("token", "")
                                     if token:
-                                        yield header, f"{token} " 
+                                        yield header, token # Yield the token as is (now includes newline)
                                 except json.JSONDecodeError:
                                     print(f"Error decoding JSON: {json_data_str}")
                                     yield "System Error", f"Received malformed data: {json_data_str}"
@@ -83,10 +83,32 @@ async def main_page():
     ui_manager = UIInterface(chat_panel=chat_panel, content_panel=content_display_panel)
     chat_panel.set_ui_manager(ui_manager)
 
+    # --- State for SSE data processing ---
+    current_code_content_name: Optional[str] = None
+    code_block_counter = 0
+
     # --- Process data from the SSE Client ---
     # Iterate over the data yielded by the sse_data_generator and update the UI.
     async for header, token in sse_data_generator():
-        ui_manager.stream_to_chat(header, token)
+        print (header, "=>", token)
+        if token.find("\n") != -1:
+            print ("Found \n")
+        if header == "code:python":
+            if current_code_content_name is None:
+                # This is the start of a new Python code block from the stream
+                code_block_counter += 1
+                current_code_content_name = f"Code:Python {code_block_counter}"
+                # Add an initial empty CodeContent box to the right panel
+                ui_manager.add_content(CodeContent(name=current_code_content_name, code="", language="python"))
+            # Stream the token to the currently active code content box
+            ui_manager.update_content(current_code_content_name, token, stream=True)
+        elif header == "text":
+            # If we receive a "text" header, it means any previous code block stream has ended.
+            current_code_content_name = None # Reset for the next potential code block
+            ui_manager.stream_to_chat(header, token)
+        else: # Handles "System Error" or any other unexpected headers
+            current_code_content_name = None # Reset
+            ui_manager.stream_to_chat(header, token) # Display errors or other info in chat
 
 # --- Run the UI Application ---
 ui.run()

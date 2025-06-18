@@ -76,6 +76,9 @@ class ContentBox:
         Updates the content within this box. Re-renders the content area.
         NOTE: Full re-render is simple; true streaming to a specific element here would require more state.
         """
+        # Ensure the expansion panel is open before updating content.
+        self.expansion.value = True
+
         # Update the underlying data model first.
         if isinstance(self.content_item, TextContent):
             self.content_item.text = f"{self.content_item.text}{new_data}" if stream else new_data
@@ -84,7 +87,7 @@ class ContentBox:
         
         # Now, re-render the content area to reflect the change.
         self._render_specific_content()
-        ui.notify(f"Content '{self.name}' updated.", type="positive")
+        #ui.notify(f"Content '{self.name}' updated.", type="positive")
 
 
 class ContentPanelUI:
@@ -95,6 +98,7 @@ class ContentPanelUI:
         self.content_manager = content_manager
         self.content_boxes: Dict[str, ContentBox] = {}  # Stores ContentBox instances by name
         self.content_area: Optional[ui.element] = None
+        self.scrollable_card_element: Optional[ui.card] = None # To store reference to the scrollable card
         self._build()
 
     def _build(self) -> None:
@@ -125,7 +129,8 @@ class ContentPanelUI:
         """Finds and updates a specific content box."""
         box_to_update = self.content_boxes.get(name)
         if box_to_update:
-            box_to_update.update_content(new_data, stream)
+            box_to_update.update_content(new_data, stream) # This will also expand it
+ 
         else:
             ui.notify(f"Content '{name}' not found for update.", type="warning")
 
@@ -142,6 +147,8 @@ class ContentPanelUI:
 
 def create_content_display_panel(content_manager: ContentManager) -> ContentPanelUI:
     """Factory function to create the right panel for displaying content."""
-    # The parent card handles the overall look and scrolling for the entire panel.
-    with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 overflow-auto'):
-        return ContentPanelUI(content_manager)
+    # The parent card handles the overall look and scrolling for the entire panel.    
+    with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 overflow-auto') as scrollable_card:
+        panel_ui = ContentPanelUI(content_manager)
+        # panel_ui.scrollable_card_element = scrollable_card # Store reference if needed for more complex scrolling, not strictly necessary for scrollIntoView on child
+        return panel_ui
