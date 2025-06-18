@@ -1,9 +1,24 @@
 # content_manager.py
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable, Tuple
 from nicegui import ui
 from collections import OrderedDict
+import httpx
+import os
+import mimetypes
+
+# --- Module-level Constants ---
+
+LANGUAGE_TO_EXTENSION: Dict[str, str] = {
+    "python": ".py",
+    "javascript": ".js",
+    "html": ".html",
+    "css": ".css",
+    "json": ".json",
+    "text": ".txt",
+    "markdown": ".md",
+}
 
 # --- Abstract Base Class for Content ---
 
@@ -19,6 +34,7 @@ class Content(ABC):
             name (str): The unique name for this piece of content.
         """
         self.name = name
+        self.is_modified: bool = False
 
     @abstractmethod
     def place_buttons(self,
@@ -74,6 +90,7 @@ class TextContent(Content):
                 with ui.row().classes("gap-2"):
                     def save_changes():
                         self.text = text_area.value
+                        self.is_modified = True
                         refresh_ui_callback()
                         dialog.close()
                         ui.notify(f"'{self.name}' updated.", type="positive")
@@ -97,10 +114,15 @@ class CodeContent(Content):
         self.language = language
 
     def place_buttons(self, on_delete: Optional[Callable[[], None]] = None, on_edit: Optional[Callable[[], None]] = None) -> None:
+        def _download_code():
+            lang_lower = self.language.lower() if self.language else ""
+            ext = LANGUAGE_TO_EXTENSION.get(lang_lower, f".{lang_lower}" if lang_lower else ".txt")
+            file_name = f"{self.name}{ext}"
+            ui.download(self.code.encode(), filename=file_name)
+
         ui.button(icon="o_code", on_click=lambda: ui.clipboard.write(self.code) or ui.notify("Code copied!")) \
             .props("flat dense color=purple-400").tooltip("Copy code")
-        ui.button(icon="o_download", on_click=lambda: ui.download(content=self.code.encode(), filename=f"{self.name}.{self.language}")) \
-            .props("flat dense color=purple-400").tooltip("Download code")
+        ui.button(icon="o_download", on_click=_download_code).props("flat dense color=purple-400").tooltip("Download code")
         ui.chip('', selectable=True, icon='add_card', color='gray-800').props('text-color=purple-400').tooltip("Add to context")
         if on_edit:
             ui.button(icon="o_edit", on_click=on_edit).props("flat dense color=blue-400").tooltip("Edit code")
@@ -114,6 +136,7 @@ class CodeContent(Content):
                 with ui.row().classes("gap-2"):
                     def save_changes():
                         self.code = code_area.value
+                        self.is_modified = True
                         refresh_ui_callback()
                         dialog.close()
                         ui.notify(f"'{self.name}' updated.", type="positive")
@@ -139,7 +162,7 @@ class TableContent(Content):
             csv_content = ",".join(self.headers) + "\n"
             for row in self.rows:
                 csv_content += ",".join(map(str, row)) + "\n"
-            ui.download(content=csv_content.encode(), filename=f"{self.name}.csv", media_type="text/csv")
+            ui.download(csv_content.encode(), filename=f"{self.name}.csv", media_type="text/csv")
 
         ui.button(icon="o_download", on_click=_download_csv).props("flat dense color=purple-400").tooltip("Download table as CSV")
         ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
@@ -163,8 +186,60 @@ class ImageContent(Content):
         self.source = source  # URL or path to the image
         self.caption = caption
 
+    async def _trigger_download(self):
+        """Handles the download logic for the image."""
+        base_filename = self.name
+        source_url_path = self.source
+        final_ext = ""
+
+        # Try to get extension from the source string itself
+        _, ext_from_source = os.path.splitext(source_url_path)
+        known_image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+
+        if ext_from_source.lower() in known_image_extensions:
+            final_ext = ext_from_source
+
+        if source_url_path.startswith(('http://', 'https://')):
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(source_url_path, follow_redirects=True)
+                    response.raise_for_status()
+
+                image_bytes = response.content
+                content_type = response.headers.get('content-type')
+
+                if not final_ext and content_type: # If URL had no extension, try Content-Type
+                    guessed_ext = mimetypes.guess_extension(content_type)
+                    if guessed_ext and guessed_ext.lower() in known_image_extensions:
+                        final_ext = guessed_ext
+
+                if not final_ext: # Fallback extension if still unknown
+                    final_ext = ".png" # Default to .png if type is truly unknown
+                    ui.notify("Could not determine image type, defaulting to .png extension.", type="warning")
+
+                filename_to_use = f"{base_filename}{final_ext}"
+                media_type_to_use = content_type if content_type else 'application/octet-stream'
+                
+                ui.download(image_bytes, filename=filename_to_use, media_type=media_type_to_use)
+                ui.notify(f"Downloading '{filename_to_use}'...", type="positive")
+
+            except httpx.HTTPStatusError as e:
+                ui.notify(f"Error fetching image ({e.response.status_code}): {e.request.url}", type="negative")
+            except httpx.RequestError as e:
+                ui.notify(f"Network error fetching image: {e.request.url}", type="negative")
+            except Exception as e:
+                ui.notify(f"An unexpected error occurred during image download: {str(e)}", type="negative")
+        else:
+            # Assume local path accessible by NiceGUI
+            if not final_ext:
+                final_ext = ".png" # Default for local files if no extension
+                ui.notify("Local image path has no extension, assuming .png.", type="warning")
+            filename_to_use = f"{base_filename}{final_ext}"
+            ui.download(src=source_url_path, filename=filename_to_use)
+            ui.notify(f"Preparing download for '{filename_to_use}'...", type="positive")
+
     def place_buttons(self, on_delete: Optional[Callable[[], None]] = None, on_edit: Optional[Callable[[], None]] = None) -> None:
-        ui.button(icon="o_download", on_click=lambda: ui.download(self.source)).props("flat dense color=purple-400").tooltip("Download image")
+        ui.button(icon="o_download", on_click=self._trigger_download).props("flat dense color=purple-400").tooltip("Download image")
         ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
         if on_edit:
             ui.button(icon="o_edit", on_click=on_edit).props("flat dense color=blue-400").tooltip("Edit image details")
@@ -182,6 +257,7 @@ class ImageContent(Content):
                 def save_changes():
                     self.source = source_input.value
                     self.caption = caption_input.value
+                    self.is_modified = True
                     refresh_ui_callback()
                     dialog.close()
                     ui.notify(f"'{self.name}' updated.", type="positive")
