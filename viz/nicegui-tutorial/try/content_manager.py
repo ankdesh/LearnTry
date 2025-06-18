@@ -77,7 +77,7 @@ class TextContent(Content):
     def place_buttons(self, on_delete: Optional[Callable[[], None]] = None, on_edit: Optional[Callable[[], None]] = None) -> None:
         ui.button(icon="o_content_copy", on_click=lambda: ui.clipboard.write(self.text) or ui.notify("Text copied!")) \
             .props("flat dense color=purple-400").tooltip("Copy text")
-        ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
+        ui.chip('', selectable=True, icon='add_card', color='gray-800').props('text-color=purple-400').tooltip("Add to context")
         if on_edit:
             ui.button(icon="o_edit", on_click=on_edit).props("flat dense color=blue-400").tooltip("Edit text")
         if on_delete:
@@ -165,7 +165,7 @@ class TableContent(Content):
             ui.download(csv_content.encode(), filename=f"{self.name}.csv", media_type="text/csv")
 
         ui.button(icon="o_download", on_click=_download_csv).props("flat dense color=purple-400").tooltip("Download table as CSV")
-        ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
+        ui.chip('', selectable=True, icon='add_card', color='gray-800').props('text-color=purple-400').tooltip("Add to context")
         if on_edit:
             # Placeholder: Table editing can be complex.
             ui.button(icon="o_edit", on_click=on_edit).props("flat dense color=blue-400").tooltip("Edit table (not fully implemented)")
@@ -240,7 +240,7 @@ class ImageContent(Content):
 
     def place_buttons(self, on_delete: Optional[Callable[[], None]] = None, on_edit: Optional[Callable[[], None]] = None) -> None:
         ui.button(icon="o_download", on_click=self._trigger_download).props("flat dense color=purple-400").tooltip("Download image")
-        ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
+        ui.chip('', selectable=True, icon='add_card', color='gray-800').props('text-color=purple-400').tooltip("Add to context")
         if on_edit:
             ui.button(icon="o_edit", on_click=on_edit).props("flat dense color=blue-400").tooltip("Edit image details")
         if on_delete:

@@ -148,9 +148,75 @@ class ContentPanelUI:
 
     def _build(self) -> None:
         """Builds the main container for all content boxes."""
-        with ui.column().classes('w-full h-full'):
-            self.content_area = ui.element('div').classes('w-full space-y-2 p-4')
-            self.refresh_display()
+        # The main card for the content panel, now with flex-col layout
+        with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 flex flex-col overflow-hidden'):
+            # 1. Header for the content panel
+            with ui.row().classes('items-center w-full p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-shrink-0'):
+                # Title for the content panel, now correctly centered in the available space.
+                ui.label("AI Generated Content").classes('text-lg font-semibold flex-grow text-center') 
+                
+                ui.button(icon="o_add", on_click=self._show_add_content_dialog).props("flat dense color=blue-400").tooltip("Add new Content")
+
+            # 2. Scrollable content area
+            # 'flex-grow' and 'h-0' make this area fill available vertical space below the header.
+            # 'overflow-auto' makes this column scrollable.
+            with ui.column().classes('w-full h-0 flex-grow overflow-auto'):
+                self.content_area = ui.element('div').classes('w-full space-y-2 p-4')
+                self.refresh_display()
+
+    def _show_add_content_dialog(self) -> None:
+        """Shows a dialog to add new content."""
+        content_types = {
+            "Text": TextContent,
+            "Code": CodeContent,
+            "Table": TableContent,
+            "Image": ImageContent,
+        }
+        with ui.dialog() as dialog, ui.card().style('min-width: 400px'):
+            ui.label("Add New Content").classes("text-lg font-semibold")
+            name_input = ui.input("Content Name").props("w-full outlined dense")
+            type_select = ui.select(list(content_types.keys()), label="Content Type", value="Text").props("w-full outlined dense")
+            
+            # Optional: Language input for CodeContent
+            language_input = ui.input("Language (for Code)", value="python").props("w-full outlined dense")
+            language_input.bind_visibility_from(type_select, 'value', value="Code")
+
+            with ui.row().classes("w-full justify-end mt-4 gap-2"):
+                ui.button("Cancel", on_click=dialog.close, color="grey").props("flat")
+                def handle_create():
+                    name = name_input.value.strip()
+                    selected_type_str = type_select.value
+
+                    if not name:
+                        ui.notify("Content name cannot be empty.", type="warning")
+                        return
+                    if self.content_manager.get_content(name):
+                        ui.notify(f"Content with name '{name}' already exists.", type="warning")
+                        return
+                    if not selected_type_str:
+                        ui.notify("Please select a content type.", type="warning")
+                        return
+
+                    content_class = content_types[selected_type_str]
+                    new_content_item: Optional[Content] = None
+
+                    if content_class == TextContent:
+                        new_content_item = TextContent(name, text="")
+                    elif content_class == CodeContent:
+                        new_content_item = CodeContent(name, code="", language=language_input.value or "plaintext")
+                    elif content_class == TableContent:
+                        new_content_item = TableContent(name, headers=[], rows=[])
+                    elif content_class == ImageContent:
+                        new_content_item = ImageContent(name, source="", caption="")
+                    
+                    if new_content_item:
+                        self.content_manager.add_content(new_content_item)
+                        self.refresh_display()
+                        ui.notify(f"'{selected_type_str}' content '{name}' added.", type="positive")
+                        dialog.close()
+
+                ui.button("Create", on_click=handle_create, color="positive")
+        dialog.open()
 
     def refresh_display(self) -> None:
         """Clears and rebuilds the entire content display from the ContentManager."""
@@ -184,9 +250,8 @@ class ContentPanelUI:
         else:
             ui.notify(f"Failed to delete content '{name}'.", type="warning")
 
-
 def create_content_display_panel(content_manager: ContentManager) -> ContentPanelUI:
     """Factory function to create the right panel for displaying content."""
-    with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 overflow-auto'):
-        panel_ui = ContentPanelUI(content_manager)
-        return panel_ui
+    # The ContentPanelUI now builds its own card structure.
+    panel_ui = ContentPanelUI(content_manager)
+    return panel_ui
