@@ -87,28 +87,37 @@ async def main_page():
     current_code_content_name: Optional[str] = None
     code_block_counter = 0
 
+
     # --- Process data from the SSE Client ---
     # Iterate over the data yielded by the sse_data_generator and update the UI.
-    async for header, token in sse_data_generator():
-        print (header, "=>", token)
-        if token.find("\n") != -1:
-            print ("Found \n")
-        if header == "code:python":
-            if current_code_content_name is None:
-                # This is the start of a new Python code block from the stream
-                code_block_counter += 1
-                current_code_content_name = f"Code:Python {code_block_counter}"
-                # Add an initial empty CodeContent box to the right panel
-                ui_manager.add_content(CodeContent(name=current_code_content_name, code="", language="python"))
-            # Stream the token to the currently active code content box
-            ui_manager.update_content(current_code_content_name, token, stream=True)
-        elif header == "text":
-            # If we receive a "text" header, it means any previous code block stream has ended.
-            current_code_content_name = None # Reset for the next potential code block
-            ui_manager.stream_to_chat(header, token)
-        else: # Handles "System Error" or any other unexpected headers
-            current_code_content_name = None # Reset
-            ui_manager.stream_to_chat(header, token) # Display errors or other info in chat
+    # The loop `for i in range(2)` will run the SSE connection and processing twice for testing.
+    for _ in range(2): # Use _ if 'i' is not used
+        # Disable chat input and change icon before starting SSE data reception
+        ui_manager.chat_panel.chat_box.disable_input()
+        try:
+            async for header, token in sse_data_generator():
+                print (header, "=>", token)
+                # if token.find("\n") != -1: # Debug print, can be removed
+                #     print ("Found \n")
+                if header == "code:python":
+                    if current_code_content_name is None:
+                        # This is the start of a new Python code block from the stream
+                        code_block_counter += 1
+                        current_code_content_name = f"Code:Python {code_block_counter}"
+                        # Add an initial empty CodeContent box to the right panel
+                        ui_manager.add_content(CodeContent(name=current_code_content_name, code="", language="python"))
+                    # Stream the token to the currently active code content box
+                    ui_manager.update_content(current_code_content_name, token, stream=True)
+                elif header == "text":
+                    # If we receive a "text" header, it means any previous code block stream has ended.
+                    current_code_content_name = None # Reset for the next potential code block
+                    ui_manager.stream_to_chat(header, token)
+                else: # Handles "System Error" or any other unexpected headers
+                    current_code_content_name = None # Reset
+                    ui_manager.stream_to_chat(header, token) # Display errors or other info in chat
+        finally:
+            # Re-enable chat input and revert icon after SSE data reception is complete or an error occurs
+            ui_manager.chat_panel.chat_box.enable_input()
 
 # --- Run the UI Application ---
 ui.run()

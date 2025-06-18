@@ -41,8 +41,8 @@ class ChatBox:
                                 btn.tooltip(btn_config['tooltip'])
 
                     # Right-aligned main send button.
-                    ui.button(icon='send', on_click=self._handle_main_submit).props(
-                        'flat round dense')
+                    self.send_button = ui.button(icon='send', on_click=self._handle_main_submit) \
+                        .props('flat round dense')
 
     async def _handle_main_submit(self) -> None:
         """Handles the click event of the main send button."""
@@ -65,6 +65,18 @@ class ChatBox:
             # Prevent default Enter behavior (adding a newline)
             event.sender.run_method('preventDefault')
             await self._handle_main_submit()
+
+    def disable_input(self) -> None:
+        """Disables the text area and send button, and changes send button icon to indicate loading."""
+        self.text_area.props('disable')
+        self.send_button.props('disable')
+        self.send_button.props(remove='icon=send').props(add='icon=hourglass_empty')
+
+    def enable_input(self) -> None:
+        """Enables the text area and send button, and reverts send button icon."""
+        self.text_area.props(remove='disable')
+        self.send_button.props(remove='disable')
+        self.send_button.props(remove='icon=hourglass_empty').props(add='icon=send')
 
 
 class ChatPanelUI:
@@ -115,8 +127,8 @@ class ChatPanelUI:
                     'on_click': self._handle_add_file_action, 'tooltip': 'Add file'}
             ]
             with ui.element('div').classes('w-full flex-shrink-0 border-t dark:border-gray-700'):
-                ChatBox(on_submit=self._handle_user_submission,
-                        action_buttons=chat_box_action_buttons)
+                self.chat_box = ChatBox(on_submit=self._handle_user_submission, # Store reference
+                                        action_buttons=chat_box_action_buttons)
 
     def _scroll_to_bottom(self):
         """Scrolls the chat history to the very bottom."""

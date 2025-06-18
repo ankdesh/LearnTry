@@ -50,7 +50,7 @@ class TextContent(Content):
     def place_buttons(self, on_delete: Optional[Callable[[], None]] = None) -> None:
         ui.button(icon="o_content_copy", on_click=lambda: ui.clipboard.write(self.text) or ui.notify("Text copied!")) \
             .props("flat dense color=purple-400").tooltip("Copy text")
-        ui.switch().props("dense").tooltip("Add to context")
+        ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
         if on_delete:
             ui.button(icon="delete_outline", on_click=on_delete, color="deep-orange-7").props("flat dense").tooltip("Delete this item")
 
@@ -69,7 +69,7 @@ class CodeContent(Content):
             .props("flat dense color=purple-400").tooltip("Copy code")
         ui.button(icon="o_download", on_click=lambda: ui.download(content=self.code.encode(), filename=f"{self.name}.{self.language}")) \
             .props("flat dense color=purple-400").tooltip("Download code")
-        ui.switch().props("dense").tooltip("Add to context")
+        ui.chip('', selectable=True, icon='add_card', color='gray-800').props('text-color=purple-400').tooltip("Add to context")
         if on_delete:
             ui.button(icon="delete_outline", on_click=on_delete, color="deep-orange-7").props("flat dense").tooltip("Delete this item")
 
@@ -91,7 +91,7 @@ class TableContent(Content):
             ui.download(content=csv_content.encode(), filename=f"{self.name}.csv", media_type="text/csv")
         
         ui.button(icon="o_download", on_click=_download_csv).props("flat dense color=purple-400").tooltip("Download table as CSV")
-        ui.switch().props("dense").tooltip("Add to context")
+        ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
         if on_delete:
             ui.button(icon="delete_outline", on_click=on_delete, color="deep-orange-7").props("flat dense").tooltip("Delete this item")
 
@@ -107,7 +107,7 @@ class ImageContent(Content):
 
     def place_buttons(self, on_delete: Optional[Callable[[], None]] = None) -> None:
         ui.button(icon="o_download", on_click=lambda: ui.download(self.source)).props("flat dense color=purple-400").tooltip("Download image")
-        ui.switch().props("dense").tooltip("Add to context")
+        ui.chip('Selectable', selectable=True, icon='add_card', color='orange').tooltip("Add to context")
         if on_delete:
             ui.button(icon="delete_outline", on_click=on_delete, color="deep-orange-7").props("flat dense").tooltip("Delete this item")
 

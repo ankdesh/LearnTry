@@ -1,5 +1,4 @@
 # content_panel_ui.py
-
 from typing import Any, Dict, Callable, Optional
 from nicegui import ui
 from content_manager import Content, ContentManager, TextContent, CodeContent, TableContent, ImageContent
@@ -19,6 +18,7 @@ class ContentBox:
         self.name = name
         self.content_item = content_item
         self.on_delete = on_delete
+
         self._build()
 
     def _build(self) -> None:
@@ -50,44 +50,55 @@ class ContentBox:
             return
         
         self.body_container.clear()
+        content_item = self.content_item
 
         with self.body_container:
-            if isinstance(self.content_item, TextContent):
-                ui.markdown(self.content_item.render()).classes("w-full prose dark:prose-invert max-w-none text-sm")
-            elif isinstance(self.content_item, CodeContent):
-                ui.markdown(self.content_item.render()).classes("w-full prose dark:prose-invert max-w-none text-xs")
-            elif isinstance(self.content_item, TableContent):
-                table_data = self.content_item.render()
-                ui.table(
-                    columns=[{'name': col, 'label': col, 'field': col, 'align': 'left'} for col in table_data['headers']],
-                    rows=[dict(zip(table_data['headers'], row_data)) for row_data in table_data['rows']]
-                ).classes("w-full text-xs")
-            elif isinstance(self.content_item, ImageContent):
-                image_data = self.content_item.render()
-                with ui.column().classes('items-center w-full'):
+            if isinstance(content_item, TextContent):
+                # Apply scrolling and max-height to the markdown container for text
+                with ui.element('div').style('max-height: 600px; overflow-y: auto;'):
+                    ui.markdown(content_item.render()).classes("w-full prose dark:prose-invert max-w-none text-sm")
+            elif isinstance(content_item, CodeContent):
+                # Apply scrolling and max-height to the markdown container for code
+                with ui.element('div').style('max-height: 600px; overflow-y: auto;'):
+                    ui.markdown(content_item.render()).classes("w-full prose dark:prose-invert max-w-none text-xs")
+            elif isinstance(content_item, TableContent):
+                table_data = content_item.render()
+                # Table itself can be scrollable if it overflows its container
+                with ui.element('div').style('max-height: 600px; overflow-y: auto;'):
+                    ui.table(
+                        columns=[{'name': col, 'label': col, 'field': col, 'align': 'left'} for col in table_data['headers']],
+                        rows=[dict(zip(table_data['headers'], row_data)) for row_data in table_data['rows']]
+                    ).classes("w-full text-xs")
+            elif isinstance(content_item, ImageContent):
+                image_data = content_item.render()
+                # Image container with max-height for very tall images
+                with ui.column().classes('items-center w-full').style('max-height: 600px; overflow-y: auto;'):
                     ui.image(image_data['source']).props('fit=contain').classes('max-w-full md:max-w-lg rounded h-auto w-auto max-h-96')
                     if image_data['caption']:
                         ui.label(image_data['caption']).classes("text-xs text-gray-500 mt-1")
             else:
-                ui.label(f"Unsupported content type: {type(self.content_item)}").classes("text-red-500")
+                ui.label(f"Unsupported content type: {type(content_item)}").classes("text-red-500")
 
     def update_content(self, new_data: Any, stream: bool = False) -> None:
         """
         Updates the content within this box. Re-renders the content area.
-        NOTE: Full re-render is simple; true streaming to a specific element here would require more state.
         """
-        # Ensure the expansion panel is open before updating content.
         self.expansion.value = True
 
-        # Update the underlying data model first.
-        if isinstance(self.content_item, TextContent):
-            self.content_item.text = f"{self.content_item.text}{new_data}" if stream else new_data
-        elif isinstance(self.content_item, CodeContent):
-            self.content_item.code = f"{self.content_item.code}{new_data}" if stream else new_data
-        
-        # Now, re-render the content area to reflect the change.
-        self._render_specific_content()
-        #ui.notify(f"Content '{self.name}' updated.", type="positive")
+        content_item = self.content_item
+
+        if isinstance(content_item, TextContent):
+            content_item.text = f"{content_item.text}{new_data}" if stream else new_data
+        elif isinstance(content_item, CodeContent):
+            content_item.code = f"{content_item.code}{new_data}" if stream else new_data
+        elif isinstance(content_item, ImageContent):
+            if not stream and isinstance(new_data, dict):
+                content_item.source = new_data.get('source', content_item.source)
+                content_item.caption = new_data.get('caption', content_item.caption)
+        # For TableContent, if new_data is a full replacement (e.g., new headers/rows)
+        # it would be handled here, then re-rendered.
+
+        self._render_specific_content() # Re-render the content area
 
 
 class ContentPanelUI:
