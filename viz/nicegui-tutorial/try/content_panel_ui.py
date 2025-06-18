@@ -37,13 +37,20 @@ class ContentBox:
                 with ui.row().classes("w-full flex-grow items-center justify-between"):
                     ui.label(self.name).classes("font-semibold text-sm dark:text-gray-200")
                     with ui.row().classes("items-center"):
-                        self.content_item.place_buttons(on_delete=lambda: self.on_delete(self.name))
+                        self.content_item.place_buttons(
+                            on_delete=lambda: self.on_delete(self.name),
+                            on_edit=self._trigger_edit_dialog  # Added edit callback
+                        )
 
             # Content Body - created once
             body_container = ui.card_section().classes("w-full bg-gray-500 dark:bg-gray-800 p-2")
             with body_container:
                 # This method now creates the elements instead of re-rendering them
                 self._create_content_display()
+
+    def _trigger_edit_dialog(self) -> None:
+        """Opens the editing UI for the content item by calling its edit_ui method."""
+        self.content_item.edit_ui(refresh_ui_callback=self._refresh_display_from_item)
 
     def _create_content_display(self) -> None:
         """
@@ -76,12 +83,36 @@ class ContentBox:
             else:
                 self.content_element = ui.label(f"Unsupported content type: {type(content_item)}").classes("text-red-500")
 
+    def _refresh_display_from_item(self) -> None:
+        """
+        Refreshes the UI elements from the current state of self.content_item.
+        This is called after an edit or by update_content.
+        """
+        content_item = self.content_item
+        if isinstance(content_item, (TextContent, CodeContent)) and self.content_element:
+            self.content_element.set_content(content_item.render())
+        elif isinstance(content_item, ImageContent):
+            image_data = content_item.render()
+            if self.image_element: self.image_element.set_source(image_data['source'])
+            if self.caption_element: self.caption_element.set_text(image_data['caption'])
+        elif isinstance(content_item, TableContent) and self.content_element:
+            table_data = content_item.render()
+            # Assuming self.content_element is the ui.table instance
+            if hasattr(self.content_element, 'rows') and hasattr(self.content_element, 'columns'):
+                self.content_element.columns = [{'name': col, 'label': col, 'field': col, 'align': 'left'} for col in table_data['headers']]
+                self.content_element.rows = [dict(zip(table_data['headers'], row_data)) for row_data in table_data['rows']]
+                self.content_element.update()
+
+        self.expansion.value = True # Ensure the box is open to see the update
+        if self.scroll_area: # Scroll to top after an edit seems reasonable
+            self.scroll_area.scroll_to(percent=0.0, duration=0.1)
+
+
     def update_content(self, new_data: Any, stream: bool = False) -> None:
         """
-        Updates the content within this box by modifying the existing UI elements.
-        This method now handles the auto-scrolling.
+        Updates the content item's data (e.g., from streaming or external call)
+        and then refreshes its display.
         """
-        self.expansion.value = True # Ensure the box is open to see the update
         content_item = self.content_item
 
         # Update the data model first
@@ -89,21 +120,20 @@ class ContentBox:
             content_item.text = f"{content_item.text}{new_data}" if stream else new_data
         elif isinstance(content_item, CodeContent):
             content_item.code = f"{content_item.code}{new_data}" if stream else new_data
-        elif isinstance(content_item, ImageContent) and isinstance(new_data, dict):
+        elif isinstance(content_item, ImageContent) and isinstance(new_data, dict) and not stream:
             content_item.source = new_data.get('source', content_item.source)
             content_item.caption = new_data.get('caption', content_item.caption)
-        
-        # Now, update the UI elements with the new data
-        if isinstance(content_item, (TextContent, CodeContent)) and self.content_element:
-            self.content_element.set_content(content_item.render())
-        
-        elif isinstance(content_item, ImageContent):
-            if self.image_element: self.image_element.set_source(content_item.source)
-            if self.caption_element: self.caption_element.set_text(content_item.caption)
+        # Note: TableContent updates via this method for 'new_data' are not fully defined here.
+        # It's primarily designed for streaming text/code or full replacement of image details.
 
-        # Finally, scroll to the bottom of the content area
-        if self.scroll_area:
-            self.scroll_area.scroll_to(percent=1.0)
+        # Refresh the UI from the updated content_item
+        self._refresh_display_from_item()
+
+        # Auto-scrolling for streaming updates should scroll to bottom
+        if stream and self.scroll_area:
+            ui.timer(0.1, lambda: self.scroll_area.scroll_to(percent=1.0, duration=0.1), once=True)
+        elif not stream: # If not streaming (e.g. full update or after edit), ensure it's open and scrolled to top
+            self.expansion.value = True
 
 
 class ContentPanelUI:
