@@ -208,12 +208,12 @@ class ChatPanelUI:
 
         # Determine border color and alignment based on sender type
         if sender_type == "user":
-            # Changed to border with color
-            border_color_class = "dark:border-purple-900" # Adjusted for better visibility
+            # Transparent box with thick gray border
+            border_color_class = "border-purple-900"
             alignment_class = "mr-auto" # Align to the left
         elif sender_type == "ai":
-            # Changed to border with color
-            border_color_class = "dark:border-teal-900" # Adjusted for better visibility
+            # Transparent box with thick slate border
+            border_color_class = "dark:border-teal-900" 
             alignment_class = "ml-auto" # Align to the right
         elif sender_type == "system":
             # Changed to border with color
@@ -234,6 +234,12 @@ class ChatPanelUI:
                 with ui.card_section().classes('p-0'): # Reduced padding
                     self._current_streaming_element = ui.markdown(
                         message_text).classes('text-sm dark:prose-invert max-w-none')
+
+                # Add like/dislike buttons for AI messages
+                if sender_type == "ai":
+                    with ui.row().classes('w-full justify-end p-1'): # Right-aligned row with small padding
+                        ui.button(icon='thumb_up', on_click=lambda: ui.notify('Liked!')).props('flat round dense').tooltip('Like')
+                        ui.button(icon='thumb_down', on_click=lambda: ui.notify('Disliked!')).props('flat round dense').tooltip('Dislike')
 
         self._scroll_to_bottom()
 
