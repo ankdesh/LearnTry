@@ -1,23 +1,19 @@
 # chat_ui.py
 
-from typing import Callable, Optional, Any, List, Dict, Awaitable
+from typing import Optional, List
 from datetime import datetime
 from nicegui import ui
-from nicegui.events import UploadEventArguments, GenericEventArguments # Explicit imports
-import tempfile 
+from nicegui.events import UploadEventArguments
 from pathlib import Path
-import shutil 
-import io # Needed to read file content into BytesIO
-import mimetypes # Needed to guess mime type from file path
+import io
+import mimetypes
+
 from file_handlers import FileHandlerFactory
-from local_file_picker_ui import LocalFilePicker # Import from the new file
-import logging # New import
+from local_file_picker_ui import LocalFilePicker  # Import from the new file
 
 # Forward declaration for type hinting to avoid circular import
 if False:
     from ui_manager import UIManager
-
-_logger = logging.getLogger(__name__) # New logger for this module
 
 
 class ChatBox:
@@ -26,8 +22,8 @@ class ChatBox:
     """
 
     def __init__(self,
-                 chat_panel_ui: 'ChatPanelUI'): # Pass the parent panel instance
-        self.chat_panel_ui = chat_panel_ui # Store reference to the parent panel
+                 chat_panel_ui: 'ChatPanelUI'):  # Pass the parent panel instance
+        self.chat_panel_ui = chat_panel_ui  # Store reference to the parent panel
         self._build()
 
     def _build(self):
@@ -44,9 +40,10 @@ class ChatBox:
                 # A row for action buttons and the main send button.
                 with ui.row().classes('w-full items-center justify-between p-2'):
                     # Left-aligned custom action button (File picker).
-                    with ui.row().classes('items-center'): # Container for left-aligned items
+                    with ui.row().classes('items-center'):  # Container for left-aligned items
                         # Button to open the local file picker dialog
-                        self.file_picker_button = ui.button(icon='attach_file', on_click=self._open_file_picker)
+                        self.file_picker_button = ui.button(icon='attach_file', on_click=self._open_file_picker) \
+                            .props('flat round dense').tooltip("Attach file")
 
                     # Right-aligned main send button.
                     self.send_button = ui.button(icon='send', on_click=self._handle_main_submit) \
@@ -71,8 +68,12 @@ class ChatBox:
         """Internal handler for ui.upload's on_upload event, calls the provided callback."""
         # This method is no longer used as ui.upload is removed.
         pass
+
     async def _handle_keydown(self, event: any) -> None:
-        """Handles keydown events on the textarea, specifically for Shift+Enter."""
+        """
+        Handles keydown events on the textarea.
+        Specifically, submits the message if Shift+Enter is pressed.
+        """
         # The event object from NiceGUI's on('keydown') is a dictionary-like object.
         if event.args['key'] == 'Enter' and event.args['shiftKey']:
             # Prevent default Enter behavior (adding a newline)
@@ -80,17 +81,27 @@ class ChatBox:
             await self._handle_main_submit()
 
     async def _open_file_picker(self) -> None:
-        """Opens the local file picker dialog."""
+        """
+        Opens the local file picker dialog.
+        The LocalFilePicker allows selecting files from the server's filesystem.
+        """
         # Start in the user's home directory or current directory as a fallback
         start_dir = Path.home() if Path.home().is_dir() else Path('.')
         picker = LocalFilePicker(str(start_dir), multiple=False)
+        # Await the dialog's result (list of selected file paths or None if cancelled)
         result = await picker
 
-        if result: # Result is a list of paths, or None if cancelled
+        if result:  # Result is a list of paths, or None if cancelled
             await self._handle_file_picker_result(result)
 
     async def _handle_file_picker_result(self, file_paths: List[str]) -> None:
-        """Handles the result from the local file picker."""
+        """
+        Handles the file paths selected via the LocalFilePicker.
+        Reads each file's content and passes it to the ChatPanelUI for processing.
+
+        Args:
+            file_paths (List[str]): A list of absolute paths to the selected files.
+        """
         if not file_paths:
             return
 
@@ -98,31 +109,37 @@ class ChatBox:
             try:
                 file_path_obj = Path(file_path_str)
                 if not file_path_obj.is_file():
-                    ui.notify(f"'{file_path_obj.name}' is not a valid file.", type='warning')
+                    ui.notify(
+                        f"'{file_path_obj.name}' is not a valid file.", type='warning')
                     continue
 
+                # Read file content into a BytesIO buffer
                 with open(file_path_obj, 'rb') as f:
                     file_content_buffer = io.BytesIO(f.read())
 
+                # Guess MIME type from file extension
                 content_type, _ = mimetypes.guess_type(file_path_str)
-                content_type = content_type or 'application/octet-stream'
+                content_type = content_type or 'application/octet-stream'  # Default if unknown
 
+                # Delegate processing to the parent ChatPanelUI
                 await self.chat_panel_ui._process_file_content(file_content_buffer, file_path_obj.name, content_type)
             except Exception as ex:
-                _logger.error(f"Error processing selected file {file_path_str}: {ex}")
-                ui.notify(f"Could not process file {file_path_obj.name}: {ex}", type='negative')
+                ui.notify(
+                    f"Could not process file {file_path_obj.name}: {ex}", type='negative')
 
     def disable_input(self) -> None:
         """Disables the text area and send button, and changes send button icon to indicate loading."""
         self.text_area.props('disable')
         self.send_button.props('disable')
-        self.send_button.props(remove='icon=send').props(add='icon=hourglass_empty')
+        self.send_button.props(remove='icon=send').props(
+            add='icon=hourglass_empty')
 
     def enable_input(self) -> None:
         """Enables the text area and send button, and reverts send button icon."""
         self.text_area.props(remove='disable')
         self.send_button.props(remove='disable')
-        self.send_button.props(remove='icon=hourglass_empty').props(add='icon=send')
+        self.send_button.props(
+            remove='icon=hourglass_empty').props(add='icon=send')
 
 
 class ChatPanelUI:
@@ -166,7 +183,7 @@ class ChatPanelUI:
             # 3. Chat input box area at the bottom.
             with ui.element('div').classes('w-full flex-shrink-0 border-t dark:border-gray-700'):
                 self.chat_box = ChatBox(
-                    chat_panel_ui=self # Pass self to ChatBox
+                    chat_panel_ui=self  # Pass self to ChatBox
                 )
 
     def _scroll_to_bottom(self):
@@ -198,7 +215,10 @@ class ChatPanelUI:
 
     def stream_message_chunk(self, header: str, token: str) -> None:
         """
-        Streams a chunk (token) of a message. Appends to the last message if the header is the same.
+        Streams a chunk (token) of a message to the chat panel.
+        - If the `header` is the same as the last message, the `token` is appended.
+        - If the `header` is different (or it's the first token for a new message),
+          a new message box is created using `add_message`.
         """
         # If the header has changed, or if there's no active streaming element, create a new message box.
         if header != self._last_message_header or self._current_streaming_element is None:
@@ -215,7 +235,7 @@ class ChatPanelUI:
         Handles the user's submitted message. Displays it in the chat.
         The simulated AI response has been removed to allow for real backend data.
         """
-        if not self.ui_manager:
+        if not self.ui_manager:  # Should always be set by the main app
             ui.notify("UI Manager not configured.", type='negative')
             return
 
@@ -226,25 +246,31 @@ class ChatPanelUI:
     async def _process_file_content(self, file_content_buffer: io.BytesIO, file_name: str, content_type: str) -> None:
         """
         Processes file content received from the local file picker in ChatBox.
+        This involves using a FileHandlerFactory to get an appropriate handler
+        based on the file type, then rendering and adding the content via the UIManager.
+
+        Args:
+            file_content_buffer (io.BytesIO): The file content as a byte stream.
+            file_name (str): The name of the file.
+            content_type (str): The MIME type of the file.
         """
         if not self.ui_manager:
-            ui.notify("UI Manager not configured for file handling.", type='negative')
-            _logger.error("UI Manager not available in ChatPanelUI for _process_uploaded_file.")
+            ui.notify("UI Manager not configured for file handling.",
+                      type='negative')
             return
 
         try:
-            file_size = len(file_content_buffer.getvalue()) # Get size from BytesIO buffer
-            _logger.info(f"Processing file: {file_name}, Type: {content_type}, Size: {file_size} bytes")
-
-            handler = FileHandlerFactory.get_handler(file_content_buffer, file_name, content_type)
+            # Get size from BytesIO buffer
+            file_size = len(file_content_buffer.getvalue())
+            handler = FileHandlerFactory.get_handler(
+                file_content_buffer, file_name, content_type)
             content_obj = await handler.get_content_representation()
-            
+
             self.ui_manager.add_content(content_obj)
-            ui.notify(f"File '{file_name}' processed and added to content panel.", type='positive')
-            _logger.info(f"File '{file_name}' added to content panel as '{content_obj.name}'.")
+            ui.notify(
+                f"File '{file_name}' processed and added to content panel.", type='positive')
         except Exception as e:
             ui.notify(f"Error processing file: {str(e)}", type='negative')
-            _logger.exception(f"Error during file processing in _process_file_content")
 
 
 def create_chat_display_panel(left_drawer: ui.left_drawer) -> ChatPanelUI:
