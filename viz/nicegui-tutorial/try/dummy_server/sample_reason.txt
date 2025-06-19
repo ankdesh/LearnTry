@@ -1,2 +1,17 @@
-This is the rationale.
-It explains the process.
+2. Miss
+A Miss request is sent to the MSHR when a miss (!s2_hits(i)) or ECC error (s2_meta_corrupt(i)
+|| s2_data_corrupt(i)) occurs and the port is not abnormal and is not in the MMIO region.
+toMSHRArbiter.io.in(i).valid = true, the Arbiter only sends a Miss request.
+3. Both mouths need Miss
+Same as above, but both ports meet the condition that s2_should_fetch is high.
+toMSHRArbiter.io.in(0).valid and toMSHRArbiter.io.in(1).valid are both true. The Arbiter
+sends requests in sequence according to the arbitration order.
+4. Duplicate request blocking
+https://open-verify.cc/UnityChipForXiangShan/docs/_print/
+351/5424/5/25, 3:03 PM
+Progress Overview | One Core: Xiangshan Processor
+When s1_fire is high, it means that we can enter the s2 stage. If s2 has not been sent yet,
+s2_has_send(i) := false.B
+If a request has been sent, the corresponding toMSHRArbiter.io.in(i).fire is high, indicating
+that the corresponding request can be sent, s2_has_send(i) := true.
+If the message is sent again, toMSHRArbiter.io.in(i).valid is low, indicatin

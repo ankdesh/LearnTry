@@ -164,7 +164,8 @@ class ChatPanelUI:
 
     def _build(self) -> None:
         """Builds the primary UI elements for the chat panel."""
-        with ui.card().classes('w-full h-full shadow-lg rounded-lg p-0 flex flex-col overflow-hidden'):
+        # Removed shadow-lg from the main chat panel card
+        with ui.card().classes('w-full h-full rounded-lg p-0 flex flex-col overflow-hidden'):
 
             # 1. Header with sidebar toggle and title.
             with ui.row().classes('items-center w-full p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-shrink-0'):
@@ -205,21 +206,32 @@ class ChatPanelUI:
         self._last_sender_type = sender_type
         self._current_streaming_content = message_text
 
-        # Determine background color based on sender type
+        # Determine border color and alignment based on sender type
         if sender_type == "user":
-            bg_color_class = "dark:bg-purple-900"
+            # Changed to border with color
+            border_color_class = "dark:border-purple-900" # Adjusted for better visibility
+            alignment_class = "mr-auto" # Align to the left
         elif sender_type == "ai":
-            bg_color_class = "dark:bg-teal-900"
+            # Changed to border with color
+            border_color_class = "dark:border-teal-900" # Adjusted for better visibility
+            alignment_class = "ml-auto" # Align to the right
         elif sender_type == "system":
-            bg_color_class = "dark:bg-red-900/30"
+            # Changed to border with color
+            border_color_class = "border-red-900"
+            alignment_class = "ml-auto" # Align to the right
         else:
-            bg_color_class = "dark:bg-gray-700" # Default/fallback
+            border_color_class = "border-gray-700" # Default/fallback border color
+            alignment_class = "mr-auto" # Default to left
 
         with self.chat_messages_container:
             # Outer card for the message, with conditional background and margin
-            with ui.card().classes(f'w-full rounded-lg shadow-md mb-2 {bg_color_class}'):
+            # Removed background color and shadow, added border-2 and border_color_class
+            # Changed mx-auto to dynamic alignment_class
+            with ui.card().classes(
+                f'w-11/12 {alignment_class} rounded-lg mb-1 border-4 border-solid {border_color_class}'
+            ):
                 # Message content, rendered as Markdown.
-                with ui.card_section().classes('p-2'): # Reduced padding
+                with ui.card_section().classes('p-0'): # Reduced padding
                     self._current_streaming_element = ui.markdown(
                         message_text).classes('text-sm dark:prose-invert max-w-none')
 
