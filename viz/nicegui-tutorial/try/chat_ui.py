@@ -152,8 +152,8 @@ class ChatPanelUI:
         self.ui_manager: Optional['UIManager'] = None
 
         # State for message streaming
-        self._last_message_header: Optional[str] = None
-        self._current_streaming_content: str = ""
+        self._last_sender_type: Optional[str] = None # Changed from _last_message_header
+        self._current_streaming_content: str = "" # Holds the text content of the current message being streamed
         self._current_streaming_element: Optional[ui.markdown] = None
 
         self._build()
@@ -178,7 +178,7 @@ class ChatPanelUI:
             # 'flex-grow' and 'h-0' are used to make this area fill all available vertical space.
             self.chat_history_scroll_area = ui.scroll_area().classes('flex-grow w-full h-0')
             with self.chat_history_scroll_area:
-                self.chat_messages_container = ui.column().classes('w-full p-3 space-y-2')
+                self.chat_messages_container = ui.column().classes('w-full p-3') # Removed space-y-2, margin added to cards
 
             # 3. Chat input box area at the bottom.
             with ui.element('div').classes('w-full flex-shrink-0 border-t dark:border-gray-700'):
@@ -191,40 +191,49 @@ class ChatPanelUI:
         ui.timer(0.1, lambda: self.chat_history_scroll_area.scroll_to(
             percent=1.0, duration=0.1), once=True)
 
-    def add_message(self, header: str, text: str) -> None:
+    def add_message(self, message_text: str, sender_type: str) -> None:
         """
         Adds a complete message to the chat panel. This is used for non-streaming content.
+        The message appearance is determined by the sender_type.
 
         This method resets the streaming state.
+
+        Args:
+            message_text (str): The text content of the message.
+            sender_type (str): Type of the sender ("user", "ai", "system").
         """
-        self._last_message_header = header
-        self._current_streaming_content = text
+        self._last_sender_type = sender_type
+        self._current_streaming_content = message_text
+
+        # Determine background color based on sender type
+        if sender_type == "user":
+            bg_color_class = "dark:bg-purple-900"
+        elif sender_type == "ai":
+            bg_color_class = "dark:bg-teal-900"
+        elif sender_type == "system":
+            bg_color_class = "dark:bg-red-900/30"
+        else:
+            bg_color_class = "dark:bg-gray-700" # Default/fallback
 
         with self.chat_messages_container:
-            with ui.card().classes('w-full no-shadow border dark:border-gray-700'):
-                # Message header (e.g., "You" or "AI" with timestamp).
-                with ui.card_section().classes('py-1 px-2 bg-gray-100 dark:bg-gray-800'):
-                    ui.label(header).classes(
-                        'text-xs font-medium text-gray-600 dark:text-gray-400')
+            # Outer card for the message, with conditional background and margin
+            with ui.card().classes(f'w-full rounded-lg shadow-md mb-2 {bg_color_class}'):
                 # Message content, rendered as Markdown.
-                with ui.card_section().classes('py-2 px-2'):
+                with ui.card_section().classes('p-2'): # Reduced padding
                     self._current_streaming_element = ui.markdown(
-                        text).classes('text-sm dark:prose-invert max-w-none')
+                        message_text).classes('text-sm dark:prose-invert max-w-none')
 
         self._scroll_to_bottom()
 
-    def stream_message_chunk(self, header: str, token: str) -> None:
+    def stream_message_chunk(self, token: str, sender_type: str) -> None:
         """
         Streams a chunk (token) of a message to the chat panel.
-        - If the `header` is the same as the last message, the `token` is appended.
-        - If the `header` is different (or it's the first token for a new message),
-          a new message box is created using `add_message`.
+        - If the `sender_type` is the same as the last message, the `token` is appended.
+        - If the `sender_type` is different, a new message box is created.
         """
-        # If the header has changed, or if there's no active streaming element, create a new message box.
-        if header != self._last_message_header or self._current_streaming_element is None:
+        if sender_type != self._last_sender_type or self._current_streaming_element is None:
             self._current_streaming_content = ""  # Reset content
-            self.add_message(header, token)
-        # Otherwise, append the token to the existing message content and element.
+            self.add_message(token, sender_type) # Pass token as initial message_text
         else:
             self._current_streaming_content += token
             self._current_streaming_element.content = self._current_streaming_content
@@ -240,8 +249,7 @@ class ChatPanelUI:
             return
 
         # 1. Display the user's message immediately.
-        user_header = f"You ({datetime.now().strftime('%H:%M')})"
-        self.ui_manager.add_chat_message(user_header, message)
+        self.ui_manager.add_chat_message(text=message, sender_type="user")
 
     async def _process_file_content(self, file_content_buffer: io.BytesIO, file_name: str, content_type: str) -> None:
         """

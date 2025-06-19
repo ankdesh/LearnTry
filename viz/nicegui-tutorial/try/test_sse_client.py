@@ -111,10 +111,10 @@ async def main_page():
                 elif header == "text":
                     # If we receive a "text" header, it means any previous code block stream has ended.
                     current_code_content_name = None # Reset for the next potential code block
-                    ui_manager.stream_to_chat(header, token)
+                    ui_manager.stream_to_chat(token=token, sender_type="ai") # Changed header to sender_type
                 else: # Handles "System Error" or any other unexpected headers
                     current_code_content_name = None # Reset
-                    ui_manager.stream_to_chat(header, token) # Display errors or other info in chat
+                    ui_manager.stream_to_chat(token=token, sender_type="system") # Changed header to sender_type, token was error_message
         finally:
             # Re-enable chat input and revert icon after SSE data reception is complete or an error occurs
             ui_manager.chat_panel.chat_box.enable_input()

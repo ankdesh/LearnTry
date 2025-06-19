@@ -32,31 +32,31 @@ class UIInterface:
 
     # --- Chat Panel Interface ---
 
-    def add_chat_message(self, header: str, text: str) -> None:
+    def add_chat_message(self, text: str, sender_type: str) -> None:
         """
         Adds a complete, non-streaming message to the chat panel.
 
         Args:
-            header (str): The header for the message (e.g., "AI", "User").
             text (str): The full content of the message.
+            sender_type (str): Type of the sender ("user", "ai", "system").
         """
-        self.chat_panel.add_message(header, text)
+        self.chat_panel.add_message(message_text=text, sender_type=sender_type)
 
-    def stream_to_chat(self, header: str, token: str) -> None:
+    def stream_to_chat(self, token: str, sender_type: str) -> None:
         """
         Streams a token to the chat panel.
 
-        If the header is the same as the last message, the token is appended.
-        If the header is different, a new message box is created.
+        If the sender_type is the same as the last message, the token is appended.
+        If the sender_type is different, a new message box is created.
 
         This fulfills the request for an API to send messages one token at a time
         in the format: {"header": header_name, "token": word}.
 
         Args:
-            header (str): The header for the message.
             token (str): The word or chunk of text to be streamed.
+            sender_type (str): Type of the sender ("user", "ai", "system").
         """
-        self.chat_panel.stream_message_chunk(header, token)
+        self.chat_panel.stream_message_chunk(token, sender_type)
 
     # --- Content Panel Interface ---
 
