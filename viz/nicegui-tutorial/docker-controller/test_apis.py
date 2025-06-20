@@ -15,9 +15,6 @@ async def main():
         manager = ContainerManager()
         api = ExecutionApi(manager) # Create the API layer
         
-        admin_config = SystemConfig()
-        admin_config.set_config(image_name="gcc", max_containers=10)
-
         print("\n--- User 'alice' starts work ---")
         user_id_alice = "alice"
         alice_session_id = "alice_session_123"  # User-defined session ID
