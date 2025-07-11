@@ -25,6 +25,7 @@ system.cpu = MinorCPU()
 
 # Set the branch predictor for the CPU
 system.cpu.branchPred = BiModeBP()
+#system.cpu.branchPred = LocalBP()
 
 # Create the memory bus
 system.membus = SystemXBar()
