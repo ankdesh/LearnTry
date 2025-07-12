@@ -24,8 +24,10 @@ system.mem_ranges = [AddrRange('512MB')]
 system.cpu = MinorCPU()
 
 # Set the branch predictor for the CPU
-system.cpu.branchPred = BiModeBP()
 #system.cpu.branchPred = LocalBP()
+#system.cpu.branchPred.localPredictorSize = 2
+
+system.cpu.branchPred = BiModeBP()
 
 # Create the memory bus
 system.membus = SystemXBar()
