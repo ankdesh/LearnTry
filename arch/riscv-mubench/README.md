@@ -24,6 +24,11 @@ gem5.opt --debug-flags=Branch simple_gem5_riscv_cpu.py test_bp_perfect_predictio
 ## test_bp_state_swing.c
 *Purpose:* To verify the predictor's ability to transition through its entire state range, from Strongly Not-Taken (SNT) to Strongly Taken (ST) and back down, exercising all state transition paths.
 
+## test_btb_capacity_miss.c
+*Expected Observation:* After filling up the BTB, it should start eviting the enrties from BTB, which will lead to lots of (almost all for func pointers) BTB misses.
+
+## test_btb_force_misspredict.c
+*Expected Observation:* Changes target of call everytime leading to misprediction of target everytime (assuming single entry for each target).
 
 
 
