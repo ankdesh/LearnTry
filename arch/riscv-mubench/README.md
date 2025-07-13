@@ -30,6 +30,21 @@ gem5.opt --debug-flags=Branch simple_gem5_riscv_cpu.py test_bp_perfect_predictio
 ## test_btb_force_misspredict.c
 *Expected Observation:* Changes target of call everytime leading to misprediction of target everytime (assuming single entry for each target).
 
+## test_icache_complusory_miss_all_lines.c 
+*Test case* Try to make all the lines in icache to miss once due to compulsory miss.
+It creates a functions of 64B size using careful calibration. An array of 1000 such functions are called in sequence, leading to all compulsory miss (all funcs are in same section in sequence - verified by looking at asm) for each cacheline.
+
+## test_icache_stress_hits.c 
+*Test case* Randomly make hits to all the lines.
+It creates a functions of 64B size using careful calibration. An array of 1000 such functions are called first called sequentially to fill the icache, then the functions are called randomly 10000 times. Almost all (statistically) random call should be a hit in the icache.
+
+## ld_test_icache_conflit_miss.c
+*Test case* Make the conflict miss from a set. This test can also used as template to test replacement policy, if required. 
+It places functions far apart using linker scripts so that the functions are assigned to same cache set. Accessing more than 4 should lead to conflict miss in ICache
+
+## ld_test_icache_far_apart_indirect_jumps.c
+*Test case* Test the Icache capability to handle indirect jumps to widely seaparated functions.
+Uses linker script to place functions far apart in memory.
 
 
 
