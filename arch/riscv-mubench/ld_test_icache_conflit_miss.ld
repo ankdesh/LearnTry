@@ -1,15 +1,10 @@
-ENTRY(main)
+ENTRY(main) 
 MEMORY { RAM (rwx) : ORIGIN = 0x00000000, LENGTH = 256M }
 
 /* Define the global pointer, required by the RISC-V toolchain */
 __global_pointer$ = .;
 
 SECTIONS {
-  /*
-   * --- A More Explicit Approach ---
-   * Define each section with its target VMA (Virtual Memory Address)
-   * directly in the section header. This is a more robust syntax.
-   */
   .conflict_A_sec 0x140 : { *(conf_A) } > RAM
   .conflict_B_sec 0x2140 : { *(conf_B) } > RAM
   .conflict_C_sec 0x4140 : { *(conf_C) } > RAM

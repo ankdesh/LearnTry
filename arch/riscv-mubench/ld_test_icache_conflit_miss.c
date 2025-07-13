@@ -21,7 +21,7 @@ const int num_iters = 1000;
 //    27: 0000000000000140    20 FUNC    GLOBAL DEFAULT    1 conflict_func_A
 
 // Main entry point for this specific test.
-void _start() {
+void main() {
   for (int i = 0; i < num_iters; i++){
     conflict_func_A();
     conflict_func_B();
