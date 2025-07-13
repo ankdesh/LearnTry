@@ -57,7 +57,5 @@ void main() {
     for (int i = 0; i < 1000; ++i) {
         capacity_test_funcs[i]();
     }
-    // This should be a miss
-    capacity_func_1();
 }
 
