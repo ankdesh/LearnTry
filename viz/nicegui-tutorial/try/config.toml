@@ -1,0 +1,6 @@
+[Agents]
+"Chat Agent" = "107.111.112.64:2004"
+"PyCode Agent" = "107.111.112.64:2004"
+
+[UI]
+"Chatbar Percentage" = 40

@@ -81,6 +81,7 @@ class UIInterface:
         # when its on_delete callback is triggered. This method provides an
         # external way to trigger that same removal process.
         self.content_panel.delete_content_item(name)
+        
     def update_content(self, name: str, new_data: Any, stream: bool = False) -> None:
         """
         Updates an existing content item in the panel.

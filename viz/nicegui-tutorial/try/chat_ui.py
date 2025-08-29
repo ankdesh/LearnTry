@@ -11,10 +11,10 @@ import mimetypes
 from file_handlers import FileHandlerFactory
 from local_file_picker_ui import LocalFilePicker  # Import from the new file
 
-# Forward declaration for type hinting to avoid circular import
+# Forward declarations for type hinting to avoid circular imports
 if False:
-    from ui_manager import UIManager
-
+    from ui_interface import UIInterface
+    from header_sidebar_ui import Sidebar
 
 class ChatBox:
     """
@@ -147,9 +147,9 @@ class ChatPanelUI:
     Manages the UI for the entire chat panel, including message history and the input box.
     """
 
-    def __init__(self, left_drawer: ui.left_drawer):
-        self.left_drawer = left_drawer
-        self.ui_manager: Optional['UIManager'] = None
+    def __init__(self, sidebar: 'Sidebar'):
+        self.sidebar = sidebar
+        self.ui_manager: Optional['UIInterface'] = None
 
         # State for message streaming
         self._last_sender_type: Optional[str] = None # Changed from _last_message_header
@@ -158,7 +158,7 @@ class ChatPanelUI:
 
         self._build()
 
-    def set_ui_manager(self, manager: 'UIManager'):
+    def set_ui_manager(self, manager: 'UIInterface'):
         """Sets the UI manager to enable communication with other panels."""
         self.ui_manager = manager
 
@@ -169,7 +169,7 @@ class ChatPanelUI:
 
             # 1. Header with sidebar toggle and title.
             with ui.row().classes('items-center w-full p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-shrink-0'):
-                ui.button(icon='menu', on_click=self.left_drawer.toggle).props(
+                ui.button(icon='menu', on_click=self.sidebar.toggle).props(
                     'flat round dense')
                 # Added margin to balance toggle button
                 ui.label("Ankdesh AI Framework").classes(
@@ -299,8 +299,8 @@ class ChatPanelUI:
             ui.notify(f"Error processing file: {str(e)}", type='negative')
 
 
-def create_chat_display_panel(left_drawer: ui.left_drawer) -> ChatPanelUI:
+def create_chat_display_panel(sidebar: 'Sidebar') -> ChatPanelUI:
     """
     Factory function to create and return an instance of the ChatPanelUI.
     """
-    return ChatPanelUI(left_drawer)
+    return ChatPanelUI(sidebar)

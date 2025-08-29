@@ -8,7 +8,7 @@ from nicegui import ui # type: ignore
 # Import the UI components and managers from your existing files
 from content_manager import ContentManager, CodeContent # Added CodeContent
 from chat_ui import create_chat_display_panel
-from content_panel_ui import create_content_display_panel
+from content_panel_ui import create_content_display_panel, ContentPanelUI
 from header_sidebar_ui import create_collapsible_sidebar
 from ui_interface import UIInterface
 
@@ -66,15 +66,25 @@ async def main_page():
         }
     ''')
 
+    # --- Initial Config ---
+    from config_manager import ConfigManager
+    config_manager = ConfigManager()
+    # ui.notify(f"Loaded config: {config_manager._config}")
+
     # --- UI Component Initialization ---
-    left_drawer = create_collapsible_sidebar()
+    sidebar = create_collapsible_sidebar()
     content_manager = ContentManager()
+
+    # Shows the selected agents
+    # selected_agents = sidebar.get_selected_agents()    
 
     # --- Main Layout using Splitter ---
     with ui.element('div').classes('w-full h-screen flex flex-col'):
-        with ui.splitter(value=33).classes('flex-grow') as splitter:
+        splitter_percentage = config_manager.get("UI")["Chatbar Percentage"]
+        with ui.splitter(value=splitter_percentage).classes('flex-grow') as splitter:
             with splitter.before:
-                chat_panel = create_chat_display_panel(left_drawer)
+                # Pass the sidebar instance to the chat panel
+                chat_panel = create_chat_display_panel(sidebar)
             with splitter.after:
                 content_display_panel = create_content_display_panel(content_manager)
 
@@ -96,7 +106,7 @@ async def main_page():
         ui_manager.chat_panel.chat_box.disable_input()
         try:
             async for header, token in sse_data_generator():
-                print (header, "=>", token)
+                #print (header, "=>", token)
                 # if token.find("\n") != -1: # Debug print, can be removed
                 #     print ("Found \n")
                 if header == "code:python":
@@ -120,4 +130,4 @@ async def main_page():
             ui_manager.chat_panel.chat_box.enable_input()
 
 # --- Run the UI Application ---
-ui.run()
+ui.run(reload=False)
