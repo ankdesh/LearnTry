@@ -16,6 +16,7 @@ if False:
     from ui_interface import UIInterface
     from header_sidebar_ui import Sidebar
 
+
 class ChatBox:
     """
     A class-based component for creating the chat input box at the bottom of the chat panel.
@@ -52,7 +53,7 @@ class ChatBox:
     async def _handle_main_submit(self) -> None:
         """Handles the click event of the main send button."""
 
-        message = self.text_area.value.strip()
+        message = self.text_area.value
         if not message:
             ui.notify('Cannot send an empty message.', type='warning')
             return
@@ -77,7 +78,7 @@ class ChatBox:
         # The event object from NiceGUI's on('keydown') is a dictionary-like object.
         if event.args['key'] == 'Enter' and event.args['shiftKey']:
             # Prevent default Enter behavior (adding a newline)
-            event.sender.run_method('preventDefault')
+            # event.sender.run_method('preventDefault')
             await self._handle_main_submit()
 
     async def _open_file_picker(self) -> None:
@@ -152,8 +153,10 @@ class ChatPanelUI:
         self.ui_manager: Optional['UIInterface'] = None
 
         # State for message streaming
-        self._last_sender_type: Optional[str] = None # Changed from _last_message_header
-        self._current_streaming_content: str = "" # Holds the text content of the current message being streamed
+        # Changed from _last_message_header
+        self._last_sender_type: Optional[str] = None
+        # Holds the text content of the current message being streamed
+        self._current_streaming_content: str = ""
         self._current_streaming_element: Optional[ui.markdown] = None
 
         self._build()
@@ -179,7 +182,8 @@ class ChatPanelUI:
             # 'flex-grow' and 'h-0' are used to make this area fill all available vertical space.
             self.chat_history_scroll_area = ui.scroll_area().classes('flex-grow w-full h-0')
             with self.chat_history_scroll_area:
-                self.chat_messages_container = ui.column().classes('w-full p-3') # Removed space-y-2, margin added to cards
+                self.chat_messages_container = ui.column().classes(
+                    'w-full p-3')  # Removed space-y-2, margin added to cards
 
             # 3. Chat input box area at the bottom.
             with ui.element('div').classes('w-full flex-shrink-0 border-t dark:border-gray-700'):
@@ -210,20 +214,22 @@ class ChatPanelUI:
         if sender_type == "user":
             # Transparent box with thick gray border
             border_color_class = "border-purple-900"
-            alignment_class = "mr-auto" # Align to the left
+            alignment_class = "mr-auto"  # Align to the left
         elif sender_type == "ai":
             # Transparent box with thick slate border
-            border_color_class = "dark:border-teal-900" 
-            alignment_class = "ml-auto" # Align to the right
+            border_color_class = "dark:border-teal-900"
+            alignment_class = "ml-auto"  # Align to the right
         elif sender_type == "system":
             # Changed to border with color
             border_color_class = "border-red-900"
-            alignment_class = "ml-auto" # Align to the right
+            alignment_class = "ml-auto"  # Align to the right
         else:
-            border_color_class = "border-gray-700" # Default/fallback border color
-            alignment_class = "mr-auto" # Default to left
+            border_color_class = "border-gray-700"  # Default/fallback border color
+            alignment_class = "mr-auto"  # Default to left
 
         with self.chat_messages_container:
+            # Message text is converted to markdown which doesnt print single \n. Hence double
+            message_text = message_text.replace('\n', '\n\n')
             # Outer card for the message, with conditional background and margin
             # Removed background color and shadow, added border-2 and border_color_class
             # Changed mx-auto to dynamic alignment_class
@@ -231,15 +237,17 @@ class ChatPanelUI:
                 f'w-11/12 {alignment_class} rounded-lg mb-1 border-4 border-solid {border_color_class}'
             ):
                 # Message content, rendered as Markdown.
-                with ui.card_section().classes('p-0'): # Reduced padding
+                with ui.card_section().classes('p-0'):  # Reduced padding
                     self._current_streaming_element = ui.markdown(
                         message_text).classes('text-sm dark:prose-invert max-w-none')
 
                 # Add like/dislike buttons for AI messages
                 if sender_type == "ai":
-                    with ui.row().classes('w-full justify-end p-1'): # Right-aligned row with small padding
-                        ui.button(icon='thumb_up', on_click=lambda: ui.notify('Liked!')).props('flat round dense').tooltip('Like')
-                        ui.button(icon='thumb_down', on_click=lambda: ui.notify('Disliked!')).props('flat round dense').tooltip('Dislike')
+                    with ui.row().classes('w-full justify-end p-1'):  # Right-aligned row with small padding
+                        ui.button(icon='thumb_up', on_click=lambda: ui.notify(
+                            'Liked!')).props('flat round dense').tooltip('Like')
+                        ui.button(icon='thumb_down', on_click=lambda: ui.notify(
+                            'Disliked!')).props('flat round dense').tooltip('Dislike')
 
         self._scroll_to_bottom()
 
@@ -251,7 +259,8 @@ class ChatPanelUI:
         """
         if sender_type != self._last_sender_type or self._current_streaming_element is None:
             self._current_streaming_content = ""  # Reset content
-            self.add_message(token, sender_type) # Pass token as initial message_text
+            # Pass token as initial message_text
+            self.add_message(token, sender_type)
         else:
             self._current_streaming_content += token
             self._current_streaming_element.content = self._current_streaming_content
@@ -266,7 +275,6 @@ class ChatPanelUI:
             ui.notify("UI Manager not configured.", type='negative')
             return
 
-        # 1. Display the user's message immediately.
         self.ui_manager.add_chat_message(text=message, sender_type="user")
 
     async def _process_file_content(self, file_content_buffer: io.BytesIO, file_name: str, content_type: str) -> None:

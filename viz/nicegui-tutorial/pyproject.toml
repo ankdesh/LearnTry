@@ -14,5 +14,6 @@ dependencies = [
     "pyqtwebengine>=5.15.7",
     "pywebview>=5.4",
     "qtpy>=2.4.3",
+    "toml>=0.10.2",
     "uvicorn>=0.34.3",
 ]

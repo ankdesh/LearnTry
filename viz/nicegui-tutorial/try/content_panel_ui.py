@@ -104,8 +104,8 @@ class ContentBox:
                 self.content_element.update()
 
         self.expansion.value = True # Ensure the box is open to see the update
-        if self.scroll_area: # Scroll to top after an edit seems reasonable
-            self.scroll_area.scroll_to(percent=0.0, duration=0.1)
+        if self.scroll_area: # Scroll to bottom 
+            self.scroll_area.scroll_to(percent=1.0, duration=0.0)
 
 
     def update_content(self, new_data: Any, stream: bool = False) -> None:
@@ -128,13 +128,6 @@ class ContentBox:
 
         # Refresh the UI from the updated content_item
         self._refresh_display_from_item()
-
-        # Auto-scrolling for streaming updates should scroll to bottom
-        if stream and self.scroll_area:
-            ui.timer(0.1, lambda: self.scroll_area.scroll_to(percent=1.0, duration=0.1), once=True)
-        elif not stream: # If not streaming (e.g. full update or after edit), ensure it's open and scrolled to top
-            self.expansion.value = True
-
 
 class ContentPanelUI:
     """
