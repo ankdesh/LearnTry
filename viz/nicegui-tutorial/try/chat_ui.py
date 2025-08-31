@@ -9,7 +9,6 @@ import io
 import mimetypes
 
 from file_handlers import FileHandlerFactory
-from local_file_picker_ui import LocalFilePicker  # Import from the new file
 
 # Forward declarations for type hinting to avoid circular imports
 if False:
@@ -24,8 +23,28 @@ class ChatBox:
 
     def __init__(self,
                  chat_panel_ui: 'ChatPanelUI'):  # Pass the parent panel instance
+        self.upload_dialog: Optional[ui.dialog] = None
+        self.uploader: Optional[ui.upload] = None
         self.chat_panel_ui = chat_panel_ui  # Store reference to the parent panel
         self._build()
+
+    def _show_upload_dialog(self) -> None:
+        """Shows a dialog to upload files from the user's computer."""
+        with ui.dialog() as self.upload_dialog, ui.card():
+            ui.label('Upload a file').classes('text-lg font-semibold')
+            # The on_upload handler is called after the user clicks "Upload".
+            # The dialog is closed automatically on success.
+            self.uploader = ui.upload(
+                on_upload=self._handle_on_upload,
+                on_rejected=lambda: ui.notify('File rejected. Please check size and type.', type='negative'),
+                multiple=False,
+                auto_upload=False,
+                label='Select file'
+            ).props('flat').classes('w-full')
+            with ui.row().classes('w-full justify-end'):
+                ui.button('Cancel', on_click=self.upload_dialog.close).props('flat')
+
+        self.upload_dialog.open()
 
     def _build(self):
         """Builds the chat input area UI."""
@@ -33,42 +52,50 @@ class ChatBox:
         with ui.card().classes('w-full shadow-none rounded-none'):
             with ui.column().classes('w-full gap-0'):
                 # The text area for user input. 'autogrow' is essential for a good UX.
-                self.text_area = ui.textarea(placeholder='Type your message...') \
+                self.text_area = ui.textarea(placeholder='Enter for send, Shift+Enter for newline...') \
                     .classes('w-full text-sm')
                 self.text_area.on('keydown', self._handle_keydown, throttle=0.05, leading_events=True,
                                   trailing_events=False).props('filled autogrow input-class="h-auto"')
 
-                # A row for action buttons and the main send button.
-                with ui.row().classes('w-full items-center justify-between p-2'):
-                    # Left-aligned custom action button (File picker).
-                    with ui.row().classes('items-center'):  # Container for left-aligned items
-                        # Button to open the local file picker dialog
-                        self.file_picker_button = ui.button(icon='attach_file', on_click=self._open_file_picker) \
-                            .props('flat round dense').tooltip("Attach file")
 
-                    # Right-aligned main send button.
-                    self.send_button = ui.button(icon='send', on_click=self._handle_main_submit) \
-                        .props('flat round dense')
+            # A row for action buttons and the main send button.
+            with ui.row().classes('w-full items-center p-2'):
+                # Button to open the upload dialog
+                ui.button(icon='attach_file', on_click=self._show_upload_dialog) \
+                    .props('flat round dense').tooltip("Attach file")
+
+                ui.space()
+
+                # Right-aligned main send button.
+                self.send_button = ui.button(icon='send', on_click=self._handle_main_submit) \
+                    .props('flat round dense')
 
     async def _handle_main_submit(self) -> None:
         """Handles the click event of the main send button."""
-
+ 
         message = self.text_area.value
         if not message:
             ui.notify('Cannot send an empty message.', type='warning')
             return
-
+ 
         # Call the provided async submit handler.
         await self.chat_panel_ui._handle_user_submission(message)
         # Clear the input field after submission.
         self.text_area.value = ''
         # Refocus for quick follow-up messages.
         self.text_area.run_method('focus')
-
-    async def _handle_on_upload_event(self, e: UploadEventArguments) -> None:
-        """Internal handler for ui.upload's on_upload event, calls the provided callback."""
-        # This method is no longer used as ui.upload is removed.
-        pass
+ 
+    async def _handle_on_upload(self, e: UploadEventArguments) -> None:
+        """
+        Handles the file upload event from ui.upload.
+        Processes the uploaded file content by passing it to the parent panel.
+        """
+        await self.chat_panel_ui._process_file_content(
+            file_content_buffer=e.content,
+            file_name=e.name,
+            content_type=e.type,
+        )
+        # The dialog is closed automatically by ui.upload on success.
 
     async def _handle_keydown(self, event: any) -> None:
         """
@@ -76,57 +103,8 @@ class ChatBox:
         Specifically, submits the message if Shift+Enter is pressed.
         """
         # The event object from NiceGUI's on('keydown') is a dictionary-like object.
-        if event.args['key'] == 'Enter' and event.args['shiftKey']:
-            # Prevent default Enter behavior (adding a newline)
-            # event.sender.run_method('preventDefault')
+        if event.args['key'] == 'Enter' and not event.args['shiftKey']:
             await self._handle_main_submit()
-
-    async def _open_file_picker(self) -> None:
-        """
-        Opens the local file picker dialog.
-        The LocalFilePicker allows selecting files from the server's filesystem.
-        """
-        # Start in the user's home directory or current directory as a fallback
-        start_dir = Path.home() if Path.home().is_dir() else Path('.')
-        picker = LocalFilePicker(str(start_dir), multiple=False)
-        # Await the dialog's result (list of selected file paths or None if cancelled)
-        result = await picker
-
-        if result:  # Result is a list of paths, or None if cancelled
-            await self._handle_file_picker_result(result)
-
-    async def _handle_file_picker_result(self, file_paths: List[str]) -> None:
-        """
-        Handles the file paths selected via the LocalFilePicker.
-        Reads each file's content and passes it to the ChatPanelUI for processing.
-
-        Args:
-            file_paths (List[str]): A list of absolute paths to the selected files.
-        """
-        if not file_paths:
-            return
-
-        for file_path_str in file_paths:
-            try:
-                file_path_obj = Path(file_path_str)
-                if not file_path_obj.is_file():
-                    ui.notify(
-                        f"'{file_path_obj.name}' is not a valid file.", type='warning')
-                    continue
-
-                # Read file content into a BytesIO buffer
-                with open(file_path_obj, 'rb') as f:
-                    file_content_buffer = io.BytesIO(f.read())
-
-                # Guess MIME type from file extension
-                content_type, _ = mimetypes.guess_type(file_path_str)
-                content_type = content_type or 'application/octet-stream'  # Default if unknown
-
-                # Delegate processing to the parent ChatPanelUI
-                await self.chat_panel_ui._process_file_content(file_content_buffer, file_path_obj.name, content_type)
-            except Exception as ex:
-                ui.notify(
-                    f"Could not process file {file_path_obj.name}: {ex}", type='negative')
 
     def disable_input(self) -> None:
         """Disables the text area and send button, and changes send button icon to indicate loading."""
@@ -193,8 +171,7 @@ class ChatPanelUI:
 
     def _scroll_to_bottom(self):
         """Scrolls the chat history to the very bottom."""
-        ui.timer(0.1, lambda: self.chat_history_scroll_area.scroll_to(
-            percent=1.0, duration=0.1), once=True)
+        self.chat_history_scroll_area.scroll_to(percent=1.0, duration=0.1)
 
     def add_message(self, message_text: str, sender_type: str) -> None:
         """
@@ -293,18 +270,7 @@ class ChatPanelUI:
                       type='negative')
             return
 
-        try:
-            # Get size from BytesIO buffer
-            file_size = len(file_content_buffer.getvalue())
-            handler = FileHandlerFactory.get_handler(
-                file_content_buffer, file_name, content_type)
-            content_obj = await handler.get_content_representation()
-
-            self.ui_manager.add_content(content_obj)
-            ui.notify(
-                f"File '{file_name}' processed and added to content panel.", type='positive')
-        except Exception as e:
-            ui.notify(f"Error processing file: {str(e)}", type='negative')
+        ui.notify(file_name)
 
 
 def create_chat_display_panel(sidebar: 'Sidebar') -> ChatPanelUI:
