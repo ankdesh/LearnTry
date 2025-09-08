@@ -1,0 +1,14 @@
+.title Voltage Divider
+Vinput in_cir 0 10V
+R1 in_cir out 9kOhm
+R2 out 0 1kOhm
+.options TEMP = 25C
+.options TNOM = 25C
+.options NOINIT
+.options filetype = binary
+
+.op
+
+.end
+
+
