@@ -1,0 +1,14 @@
+# read design
+read_verilog counter.v
+write_verilog counter_read.v
+
+# generic synthesis
+synth -top counter
+write_verilog counter_synth_generic.v
+
+# mapping to internal cell library
+abc -g cmos2
+write_verilog counter_synth_mapped.v
+
+# write synthesized design
+write_verilog counter_synth.v
