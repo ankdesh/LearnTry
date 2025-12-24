@@ -185,6 +185,5 @@ ax.legend()
 
 # Optional: Use a log scale for Y-axis if you want to see the turn-on behavior better
 # ax.set_yscale('log') 
-
 plt.tight_layout()
-plt.show()
+plt.savefig('nmos_sweep.png')
