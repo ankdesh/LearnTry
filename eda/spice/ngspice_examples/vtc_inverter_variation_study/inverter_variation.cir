@@ -1,0 +1,39 @@
+*** MODEL Descriptions ***
+
+*** NETLIST Description ***
+***Nominal transistors***
+M1 out in vdd vdd pmos W=0.375u L=0.25u
+M2 out in 0 0 nmos W=0.375u L=0.25u
+
+cload out 0 10f
+.control
+    let nmoswidth = 0.375u
+    alter M2 W = nmoswidth
+
+    let pmoswidth = 1.875u
+    alter M1 W = pmoswidth
+
+    let widthVariation = 0
+    dowhile widthVariation < 5
+      echo "nmos width is $&nmoswidth"
+echo "pmos width is $&pmoswidth"
+      dc Vin 0 2.5 0.01  
+      let nmoswidth = nmoswidth + 0.375u
+      let pmoswidth = pmoswidth - 0.375u
+      alter @M2[W] = nmoswidth
+      alter @M1[W] = pmoswidth
+      let widthVariation = widthVariation + 1
+    end  
+
+    plot dc1.out vs in dc2.out vs in dc3.out vs in dc4.out vs in dc5.out vs in xlabel "input voltage [V]" ylabel "output voltage [V]"  title "Inverter dc characteristics as a function of NMOS-PMOS width"
+*   quit
+.endc
+
+Vdd vdd 0 2.5
+Vin in 0 2.5
+*** SIMULATION Commands ***
+***.op
+***.dc Vin 0 2.5 0.05
+*** .include tsmc_025um_model.mod  ***
+.LIB "tsmc_025um_model.mod" CMOS_MODELS
+.end
