@@ -1,0 +1,140 @@
+Script started on 2026-05-09 17:06:51+05:30 [TERM="screen-256color" TTY="/dev/pts/5" COLUMNS="184" LINES="44"]
+[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ read_ve[K[K[K[K[K[K[Kyoy[Ksys
+yosys            yosys-abc        yosys-filterlib  yosys-smtbmc     yosys-witness    
+[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ yosys
+[?2004l
+ /----------------------------------------------------------------------------\
+ |                                                                            |
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |                                                                            |
+ |  Copyright (C) 2012 - 2020  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |                                                                            |
+ |  Permission to use, copy, modify, and/or distribute this software for any  |
+ |  purpose with or without fee is hereby granted, provided that the above    |
+ |  copyright notice and this permission notice appear in all copies.         |
+ |                                                                            |
+ |  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  |
+ |  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF          |
+ |  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR   |
+ |  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    |
+ |  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN     |
+ |  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   |
+ |  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            |
+ |                                                                            |
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.33 (git sha1 2584903a060)
+
+[?2004h
+yosys> read 
+mux_2x1.v    phase_1.txt  
+
+yosys> read pa[K[Kmux_2x1.v 
+[?2004l
+Syntax error in command `read mux_2x1.v':
+
+    read {-vlog95|-vlog2k|-sv2005|-sv2009|-sv2012|-sv|-formal} <verilog-file>..
+
+Load the specified Verilog/SystemVerilog files. (Full SystemVerilog support
+is only available via Verific.)
+
+Additional -D<macro>[=<value>] options may be added after the option indicating
+the language version (and before file names) to set additional verilog defines.
+
+
+    read {-liberty} <liberty-file>..
+
+Load the specified Liberty files.
+
+    -lib
+        only create empty blackbox modules
+
+
+    read {-f|-F} <command-file>
+
+Load and execute the specified command file. (Requires Verific.)
+Check verific command for more information about supported commands in file.
+
+
+    read -define <macro>[=<value>]..
+
+Set global Verilog/SystemVerilog defines.
+
+
+    read -undef <macro>..
+
+Unset global Verilog/SystemVerilog defines.
+
+
+    read -incdir <directory>
+
+Add directory to global Verilog/SystemVerilog include directories.
+
+
+    read -verific
+    read -noverific
+
+Subsequent calls to 'read' will either use or not use Verific. Calling 'read'
+with -verific will result in an error on Yosys binaries that are built without
+Verific support. The default is to use Verific if it is available.
+
+ERROR: Command syntax error: Missing mode parameter.
+
+> read mux_2x1.v
+>      ^
+[?2004h
+yosys> read mux_2x1.v [1@_[1@v[6@erilog
+[?2004l
+1. Executing Verilog-2005 frontend: mux_2x1.v
+Parsing Verilog input from `mux_2x1.v' to AST representation.
+Generating RTLIL representation for module `\mux_2x1'.
+Successfully finished Verilog frontend.
+[?2004h
+yosys> [3mhierarchy -top my_top_module[23m[C[C[C[C[C[C[C[1Phierarchy -top my_top_modul[K[K[K[K[K[K[K[K[K[K[K[Kmux_2x1 
+[?2004l
+2. Executing HIERARCHY pass (managing design hierarchy).
+
+2.1. Analyzing design hierarchy..
+Top module:  \mux_2x1
+
+2.2. Analyzing design hierarchy..
+Top module:  \mux_2x1
+Removed 0 unused modules.
+[?2004h
+yosys> show
+[?2004l
+3. Generating Graphviz representation of design.
+Writing dot description to `/home/ankdesh/.yosys_show.dot'.
+Dumping module mux_2x1 to page 1.
+Exec: { test -f '/home/ankdesh/.yosys_show.dot.pid' && fuser -s '/home/ankdesh/.yosys_show.dot.pid' 2> /dev/null; } || ( echo $$ >&3; exec xdot '/home/ankdesh/.yosys_show.dot'; ) 3> '/home/ankdesh/.yosys_show.dot.pid' &
+[?2004h
+yosys> Traceback (most recent call last):
+  File "/usr/bin/xdot", line 2, in <module>
+    from xdot.__main__ import main
+  File "/usr/lib/python3/dist-packages/xdot/__main__.py", line 22, in <module>
+    from .ui.window import DotWindow, Gtk
+  File "/usr/lib/python3/dist-packages/xdot/ui/__init__.py", line 11, in <module>
+    from .window import DotWidget, DotWindow
+  File "/usr/lib/python3/dist-packages/xdot/ui/window.py", line 42, in <module>
+    from ._xdotparser import XDotParser
+  File "/usr/lib/python3/dist-packages/xdot/ui/_xdotparser.py", line 21, in <module>
+    from distutils.version import LooseVersion
+ModuleNotFoundError: No module named 'distutils'
+^C[?2004l
+[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ [3mpip install setuptools[23mpip install setuptools
+[?2004lCommand 'pip' not found, but can be installed with:
+sudo apt install python3-pip
+[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ uv veew[K[K[K[Kint[Kit
+[?2004lInitialized project `[36mphase1[39m`
+[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ uv venv 
+[?2004lUsing CPython 3.12.3 interpreter at: [36m/usr/bin/python3.12[39m
+Creating virtual environment at: [36m.venv[39m
+Activate with: [32msource .venv/bin/activate[39m
+[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ uv add di[K[K[K[K[K[K[K[K[Krm -rf .venv/
+[?2004l[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial/phase1[00m$ cd ..
+[?2004l[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial[00m$ ls
+[?2004l'Learning Yosys_ A Comprehensive Plan.pdf'   [0m[01;34mphase1[0m
+[?2004h[01;32mankdesh@deepdream[00m:[01;34m~/explore/LearnTry/eda/yosys/gemini_generated_tutorial[00m$ rm [K[K[Kexit
+[?2004lexit
+
+Script done on 2026-05-09 17:25:46+05:30 [COMMAND_EXIT_CODE="0"]
